@@ -17,5 +17,6 @@ public class UserController {
         UserResponse userResponse = userService.signup(request);
         return userResponse;
     }
+
 }
 

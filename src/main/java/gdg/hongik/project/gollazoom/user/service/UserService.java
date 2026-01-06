@@ -1,6 +1,7 @@
 package gdg.hongik.project.gollazoom.user.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import gdg.hongik.project.gollazoom.user.dto.request.SignupRequest;
 import gdg.hongik.project.gollazoom.user.dto.response.UserResponse;
@@ -12,11 +13,12 @@ import gdg.hongik.project.gollazoom.user.repository.UserRepository;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public UserResponse signup(SignupRequest request) {
         User user = User.builder()
                 .username(request.username())
-                .password(request.password())
+                .password(passwordEncoder.encode(request.password()))
                 .nickname(request.nickname())
                 .build();
         User saved = userRepository.save(user);
