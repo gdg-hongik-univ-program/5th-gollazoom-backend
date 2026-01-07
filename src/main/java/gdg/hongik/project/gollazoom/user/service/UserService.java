@@ -1,6 +1,10 @@
 package gdg.hongik.project.gollazoom.user.service;
 
+import gdg.hongik.project.gollazoom.user.dto.request.LoginRequest;
+import gdg.hongik.project.gollazoom.user.dto.response.LoginResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import gdg.hongik.project.gollazoom.user.dto.request.SignupRequest;
@@ -26,4 +30,12 @@ public class UserService {
         return new UserResponse(saved.getId(), saved.getUsername(), saved.getNickname());
     }
 
+    public LoginResponse login(LoginRequest request) {
+        User user = userRepository.findByUsername(request.username())
+                .orElseThrow(() -> new RuntimeException(request.username()));
+        if (!passwordEncoder.matches(request.password(), user.getPassword())) {
+            throw new RuntimeException("Invalid username or password!");
+        }
+        return new LoginResponse(user.getId(), user.getUsername(), user.getNickname());
+    }
 }

@@ -1,7 +1,9 @@
 package gdg.hongik.project.gollazoom.user.controller;
 
+import gdg.hongik.project.gollazoom.user.dto.request.LoginRequest;
 import gdg.hongik.project.gollazoom.user.dto.request.SignupRequest;
 
+import gdg.hongik.project.gollazoom.user.dto.response.LoginResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import gdg.hongik.project.gollazoom.user.dto.response.UserResponse;
@@ -18,5 +20,9 @@ public class UserController {
         return userResponse;
     }
 
+    @PostMapping("/users/login")
+    public LoginResponse login(@RequestBody LoginRequest request) {
+        return userService.login(request);
+    }
 }
 
