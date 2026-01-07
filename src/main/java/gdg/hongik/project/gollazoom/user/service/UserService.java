@@ -1,5 +1,6 @@
 package gdg.hongik.project.gollazoom.user.service;
 
+import gdg.hongik.project.gollazoom.security.JwtTokenProvider;
 import gdg.hongik.project.gollazoom.user.dto.request.LoginRequest;
 import gdg.hongik.project.gollazoom.user.dto.response.LoginResponse;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtTokenProvider jwtTokenProvider;
 
     public UserResponse signup(SignupRequest request) {
         User user = User.builder()
@@ -30,12 +32,13 @@ public class UserService {
         return new UserResponse(saved.getId(), saved.getUsername(), saved.getNickname());
     }
 
-    public LoginResponse login(LoginRequest request) {
-        User user = userRepository.findByUsername(request.username())
-                .orElseThrow(() -> new RuntimeException(request.username()));
-        if (!passwordEncoder.matches(request.password(), user.getPassword())) {
-            throw new RuntimeException("Invalid username or password!");
+    public String login(String username, String rawPassword) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("존재하지 않는 사용자"));
+
+        if (!passwordEncoder.matches(rawPassword, user.getPassword())) {
+            throw new RuntimeException("비밀번호 불일치");
         }
-        return new LoginResponse(user.getId(), user.getUsername(), user.getNickname());
+        return jwtTokenProvider.createAccessToken(user.getUsername());
     }
 }
