@@ -1,5 +1,6 @@
 package gdg.hongik.project.gollazoom.user;
 
+import gdg.hongik.project.gollazoom.global.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -9,7 +10,8 @@ import lombok.NoArgsConstructor;
 @Getter
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class User {
+// 가입일, 수정일 같은 로그/관리 기능을 위해 BaseEntity 상속
+public class User extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

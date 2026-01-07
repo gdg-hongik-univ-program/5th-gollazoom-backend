@@ -8,5 +8,6 @@ public record ClosetUpdateRequest(
         Season season,
         String color,
         String memo,
-        String imageUrl
+        String imageUrl,
+        boolean rainOk
 ) { }
