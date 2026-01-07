@@ -40,20 +40,25 @@ public class Cloth extends BaseEntity {
     @Column(nullable = false, length = 500)
     private String imageUrl; // 우선 이미지 url로 했는데, 바뀔수도 있음.
 
-    public Cloth(User user, Category category, Season season, String color, String memo, String imageUrl) {
+    @Column(nullable = false)
+    private boolean rainOk;
+
+    public Cloth(User user, Category category, Season season, String color, String memo, String imageUrl, boolean rainOk) {
         this.user = user;
         this.category = category;
         this.season = season;
         this.color = color;
         this.memo = memo;
         this.imageUrl = imageUrl;
+        this.rainOk = rainOk;
     }
 
-    public void update(Category category, Season season, String color, String memo, String imageUrl) {
+    public void update(Category category, Season season, String color, String memo, String imageUrl, boolean rainOk) {
         if (category != null) this.category = category;
         if (season != null) this.season = season;
         if (color != null) this.color = color;
         if (memo != null) this.memo = memo;
         if (imageUrl != null) this.imageUrl = imageUrl;
+        this.rainOk = rainOk;
     }
 }
