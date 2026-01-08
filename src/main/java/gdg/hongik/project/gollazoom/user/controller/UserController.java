@@ -38,5 +38,13 @@ public class UserController {
         userService.changePassword(username, req);
         return ResponseEntity.noContent().build();
     }
+
+    @DeleteMapping("/me")
+    public ResponseEntity<Void> deleteMe() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = auth.getName();
+        userService.deleteMyAccount(username);
+        return ResponseEntity.noContent().build(); // 204
+    }
 }
 

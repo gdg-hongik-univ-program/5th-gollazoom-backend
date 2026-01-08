@@ -57,5 +57,12 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(req.newPassword()));
         // save() 없어도 @Transactional이면 더티체킹으로 반영됨 (그래도 명시해도 됨)
     }
+
+    @Transactional
+    public void deleteMyAccount(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("유저 없음: " + username));
+        userRepository.delete(user);
+    }
 }
 
