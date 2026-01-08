@@ -4,8 +4,10 @@ import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
+@Setter
 @Entity
 @NoArgsConstructor
 @Table(name = "users")
@@ -14,7 +16,7 @@ public class User {
     @GeneratedValue
     private Long id;
 
-    @Column
+    @Column (unique = true, nullable = false)
     private String username;
 
     @Column

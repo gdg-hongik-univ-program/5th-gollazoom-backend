@@ -1,6 +1,7 @@
 package gdg.hongik.project.gollazoom.user.service;
 
 import gdg.hongik.project.gollazoom.security.JwtTokenProvider;
+import gdg.hongik.project.gollazoom.user.dto.request.ChangePasswordRequest;
 import gdg.hongik.project.gollazoom.user.dto.request.LoginRequest;
 import gdg.hongik.project.gollazoom.user.dto.response.LoginResponse;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +13,7 @@ import gdg.hongik.project.gollazoom.user.dto.request.SignupRequest;
 import gdg.hongik.project.gollazoom.user.dto.response.UserResponse;
 import gdg.hongik.project.gollazoom.user.entity.User;
 import gdg.hongik.project.gollazoom.user.repository.UserRepository;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -41,4 +43,19 @@ public class UserService {
         }
         return jwtTokenProvider.createAccessToken(user.getUsername());
     }
+
+
+    @Transactional
+    public void changePassword(String username, ChangePasswordRequest req) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("존재하지 않는 사용자: " + username));
+
+        if (!passwordEncoder.matches(req.currentPassword(), user.getPassword())) {
+            throw new RuntimeException("현재 비밀번호가 올바르지 않습니다.");
+        }
+
+        user.setPassword(passwordEncoder.encode(req.newPassword()));
+        // save() 없어도 @Transactional이면 더티체킹으로 반영됨 (그래도 명시해도 됨)
+    }
 }
+
