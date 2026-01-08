@@ -6,7 +6,7 @@ import gdg.hongik.project.gollazoom.closet.dto.ClosetResponse;
 import gdg.hongik.project.gollazoom.closet.dto.ClosetUpdateRequest;
 import gdg.hongik.project.gollazoom.closet.entity.Cloth;
 import gdg.hongik.project.gollazoom.closet.repository.ClothRepository;
-import gdg.hongik.project.gollazoom.user.User;
+import gdg.hongik.project.gollazoom.user.entity.User;
 import gdg.hongik.project.gollazoom.user.repository.UserRepository;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;

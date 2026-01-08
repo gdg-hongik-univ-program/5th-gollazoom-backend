@@ -1,7 +1,7 @@
 package gdg.hongik.project.gollazoom.closet.entity;
 
 import gdg.hongik.project.gollazoom.global.common.BaseEntity;
-import gdg.hongik.project.gollazoom.user.User;
+import gdg.hongik.project.gollazoom.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
