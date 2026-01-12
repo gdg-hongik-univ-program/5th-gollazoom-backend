@@ -41,14 +41,14 @@ public class UserService {
         if (!passwordEncoder.matches(rawPassword, user.getPassword())) {
             throw new RuntimeException("비밀번호 불일치");
         }
-        return jwtTokenProvider.createAccessToken(user.getUsername());
+        return jwtTokenProvider.createAccessToken(user.getId());
     }
 
 
     @Transactional
-    public void changePassword(String username, ChangePasswordRequest req) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("존재하지 않는 사용자: " + username));
+    public void changePassword(Long userId, ChangePasswordRequest req) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("존재하지 않는 사용자: " + userId));
 
         if (!passwordEncoder.matches(req.currentPassword(), user.getPassword())) {
             throw new RuntimeException("현재 비밀번호가 올바르지 않습니다.");
@@ -59,9 +59,9 @@ public class UserService {
     }
 
     @Transactional
-    public void deleteMyAccount(String username) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("유저 없음: " + username));
+    public void deleteMyAccount(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("유저 없음: " + userId));
         userRepository.delete(user);
     }
 }

@@ -34,16 +34,16 @@ public class UserController {
     @PatchMapping("/password")
     public ResponseEntity<Void> changePassword(@RequestBody ChangePasswordRequest req) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String username = auth.getName(); // JwtAuthenticationFilter에서 setAuthentication 했던 name
-        userService.changePassword(username, req);
+        Long userId = (Long) auth.getPrincipal(); // ✅ 이제 userId
+        userService.changePassword(userId, req);
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/me")
     public ResponseEntity<Void> deleteMe() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String username = auth.getName();
-        userService.deleteMyAccount(username);
+        Long userId = (Long) auth.getPrincipal(); // ✅ 이제 userId
+        userService.deleteMyAccount(userId);
         return ResponseEntity.noContent().build(); // 204
     }
 }

@@ -25,25 +25,27 @@ public class JwtTokenProvider {
         this.accessTokenExpMs = expMinutes * 60_000;
     }
 
-    public String createAccessToken(String username) {
+    public String createAccessToken(Long userId) {
         Date now = new Date();
         Date exp = new Date(now.getTime() + accessTokenExpMs);
 
         return Jwts.builder()
-                .subject(username)
+                .subject(userId.toString())
                 .issuedAt(now)
                 .expiration(exp)
                 .signWith(key)   // ⭐ 이게 제일 깔끔 (알고리즘 자동 추론)
                 .compact();
     }
 
-    public String getUsername(String token) {
-        return Jwts.parser()
-                .verifyWith((javax.crypto.SecretKey) key)
+    public Long getUserId(String token) {
+        String subject = Jwts.parser()
+                .verifyWith(key)
                 .build()
                 .parseSignedClaims(token)
                 .getPayload()
                 .getSubject();
+
+        return Long.parseLong(subject);
     }
 
     public boolean validate(String token) {
