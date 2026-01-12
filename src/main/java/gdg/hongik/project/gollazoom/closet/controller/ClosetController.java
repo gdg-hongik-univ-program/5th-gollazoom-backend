@@ -7,6 +7,7 @@ import gdg.hongik.project.gollazoom.closet.dto.ClosetUpdateRequest;
 import gdg.hongik.project.gollazoom.closet.service.ClosetService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,58 +26,56 @@ public class ClosetController {
         ResponseEntity(X) -> ResponseStatus
     */
 
-    private Long getUserId(Long userIdHeader) {
-        return userIdHeader != null ? userIdHeader : 1L; // 아직 userId 헤더를 받아올 수 없으니 임시로 Long 타입 1로 설정.
-    }
-
     /**
      * 옷을 등록합니다. required = true 추후 수정 예정.
-     * @param userId
+     * @param auth
      * @param request
      * @return
      */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ClosetResponse create(
-            // 추후 required = true로 수정해야 한다. 디버그 편의상 false.
-            @RequestHeader(value = "USER-ID", required = false) Long userId,
+            Authentication auth,
             @RequestBody ClosetCreateRequest request
     ) {
-        return closetService.create(getUserId(userId), request);
+        Long userId = (Long) auth.getPrincipal();
+        return closetService.create(userId, request);
     }
 
     /**
      * 옷장에 등록된 모든 옷을 조회합니다.
-     * @param userId
+     * @param auth
      * @return
      */
     @GetMapping
     public List<ClosetItemListResponse> clothingList(
             // required = false 위와 같은 이유.
-            @RequestHeader(value = "USER-ID", required = false) Long userId
+            Authentication auth
     ) {
-        return closetService.list(getUserId(userId));
+        Long userId= (Long) auth.getPrincipal();
+        return closetService.list(userId);
     }
 
     /**
      * 옷장에 등록된 옷 중 하나의 옷만 상세조회 합니다.
-     * @param userId
+     * @param auth
      * @param clothId
      * @return
      */
     @GetMapping("/{clothId}")
     public ClosetResponse get(
             // required = false 위와 같은 이유.
-            @RequestHeader(value = "USER-ID", required = false) Long userId,
+            Authentication auth,
             @PathVariable Long clothId // clothId를 받아와야 한다.
     ) {
-        return closetService.get(getUserId(userId), clothId);
+        Long  userId= (Long) auth.getPrincipal();
+        return closetService.get(userId, clothId);
     }
 
     /**
      * 옷의 정보를 수정합니다.
      * 수정할 수 있는 변수는 카테고리, 계절, 색깔, 메모, 이미지 입니다.
-     * @param userId
+     * @param auth
      * @param clothId
      * @param request
      * @return
@@ -84,17 +83,18 @@ public class ClosetController {
     @PatchMapping("/{clothId}")
     public ClosetResponse update(
             // required = false 위와 같은 이유.
-            @RequestHeader(value = "USER-ID", required = false) Long userId,
+            Authentication auth,
             @PathVariable Long clothId,
             // 업데이트 내용이 Body에 있으니까 여기는 @RequestBody가 필요하다.
             @RequestBody ClosetUpdateRequest request
     ) {
-        return closetService.update(getUserId(userId), clothId, request);
+        Long userId= (Long) auth.getPrincipal();
+        return closetService.update(userId, clothId, request);
     }
 
     /**
      * 지정된 옷을 삭제합니다.
-     * @param userId
+     * @param auth
      * @param clothId
      */
     @DeleteMapping("/{clothId}")
@@ -102,11 +102,10 @@ public class ClosetController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(
             // required = false 위와 같은 이유.
-            @RequestHeader(value = "USER-ID", required = false) Long userId,
+            Authentication auth,
             @PathVariable Long clothId
     ) {
-        closetService.delete(getUserId(userId), clothId);
+        Long  userId= (Long) auth.getPrincipal();
+        closetService.delete(userId, clothId);
     }
-
-
 }
