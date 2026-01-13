@@ -7,7 +7,6 @@ import gdg.hongik.project.gollazoom.closet.dto.ClosetUpdateRequest;
 
 import java.util.List;
 
-// 우선 대충 만들어놓음. 구현 클래스 없음.
 public interface ClosetService {
     ClosetResponse create(Long userId, ClosetCreateRequest request);
     List<ClosetItemListResponse> list(Long userId);
