@@ -13,4 +13,7 @@ public interface ClothRepository extends JpaRepository<Cloth, Long> {
 
     // 내 옷 상세목록
     Optional<Cloth> findByIdAndUser_Id(Long clothId, Long userId);
+
+    // wears API에서 여러 옷이 전부 내 옷인지 검증한다.
+    List<Cloth> findAllByIdInAndUser_Id(List<Long> clothIds, Long userId);
 }
