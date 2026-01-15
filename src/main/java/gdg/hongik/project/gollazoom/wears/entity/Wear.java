@@ -38,6 +38,9 @@ public class Wear {
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
+    @Column(nullable = false)
+    private LocalDateTime updatedAt;
+
     @OneToMany(mappedBy = "wear", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<WearItem> items = new ArrayList<>();
 
@@ -45,6 +48,16 @@ public class Wear {
     void prePersist() {
         // 이게 실행되면 현재 시간을 createAt으로 한다.
         this.createdAt = LocalDateTime.now();
+        // 업데이트의 초기값은 createdAt이다.
+        this.updatedAt = this.createdAt;
+    }
+
+    public void refreshUpdatedAt() {
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void changeDate(LocalDate date) {
+        this.date = date;
     }
 
     private Wear(User user, LocalDate date) {
@@ -59,5 +72,17 @@ public class Wear {
     public void addItem(WearItem item) {
         this.items.add(item);
         item.setWear(this);
+    }
+
+    /** 새로운 옷을 교체할 경우 사용되는 메서드
+     * wear Entity의 본질을 바꾸기 때문에 Service 계층에 없어도 된다.
+     *
+     * @param newItems : 새롭게 정해진 입을 옷의 리스트
+     */
+    public void replaceItems(List<WearItem> newItems) {
+        this.items.clear();
+        for (WearItem item : newItems) {
+            this.addItem(item);
+        }
     }
 }
