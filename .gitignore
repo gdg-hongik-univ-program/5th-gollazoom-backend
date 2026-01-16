@@ -11,3 +11,6 @@ build/
 
 # Logs
 *.log
+
+# Spring Boot config
+src/main/resources/application.properties
