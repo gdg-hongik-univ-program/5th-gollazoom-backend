@@ -1,7 +1,6 @@
 # IntelliJ IDEA
 .idea/
 *.iml
-application.properties
 
 # OS
 .DS_Store
@@ -10,6 +9,8 @@ application.properties
 .gradle/
 build/
 
-
 # Logs
 *.log
+
+# Spring Boot config
+src/main/resources/application.properties
