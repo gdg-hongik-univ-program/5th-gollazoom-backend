@@ -4,6 +4,7 @@ import gdg.hongik.project.gollazoom.user.dto.request.ChangePasswordRequest;
 import gdg.hongik.project.gollazoom.user.dto.request.LoginRequest;
 import gdg.hongik.project.gollazoom.user.dto.request.SignupRequest;
 
+import gdg.hongik.project.gollazoom.user.dto.request.WorktimeRequest;
 import gdg.hongik.project.gollazoom.user.dto.response.LoginResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
@@ -23,7 +24,7 @@ public class UserController {
 
     @PostMapping("/signup")
     @Operation(summary = "회원가입", description = "회원가입을 진행합니다")
-    public UserResponse signup(@Valid  @RequestBody SignupRequest request) {
+    public UserResponse signup(@Valid @RequestBody SignupRequest request) {
         UserResponse userResponse = userService.signup(request);
         return userResponse;
     }
@@ -39,7 +40,7 @@ public class UserController {
     @Operation(summary = "비밀번호 변경", description = "비밀번호를 변경합니다")
     public ResponseEntity<Void> changePassword(@RequestBody ChangePasswordRequest req) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Long userId = (Long) auth.getPrincipal(); // ✅ 이제 userId
+        Long userId = (Long) auth.getPrincipal();
         userService.changePassword(userId, req);
         return ResponseEntity.noContent().build();
     }
@@ -48,8 +49,30 @@ public class UserController {
     @Operation(summary = "내 정보 삭제", description = "등록된 내 정보를 삭제합니다")
     public ResponseEntity<Void> deleteMe() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Long userId = (Long) auth.getPrincipal(); // ✅ 이제 userId
+        Long userId = (Long) auth.getPrincipal();
         userService.deleteMyAccount(userId);
+        return ResponseEntity.noContent().build(); // 204
+    }
+
+    @PostMapping("/worktime")
+    @Operation(summary = "출근시간 입력")
+    public ResponseEntity<Void> createWorktime(
+            @Valid @RequestBody WorktimeRequest req
+    ) {
+        Long userId = (Long) SecurityContextHolder.getContext()
+                .getAuthentication().getPrincipal();
+        userService.createWorktime(userId, req.worktime());
+        return ResponseEntity.noContent().build(); // 204
+    }
+
+    @PatchMapping("/worktime")
+    @Operation(summary = "출근시간 수정")
+    public ResponseEntity<Void> updateWorktime(
+            @Valid @RequestBody WorktimeRequest req
+    ) {
+        Long userId = (Long) SecurityContextHolder.getContext()
+                .getAuthentication().getPrincipal();
+        userService.updateWorktime(userId, req.worktime());
         return ResponseEntity.noContent().build(); // 204
     }
 }

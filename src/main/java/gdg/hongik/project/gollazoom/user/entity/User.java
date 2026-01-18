@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalTime;
+
 @Getter
 @Setter
 @Entity
@@ -24,6 +26,10 @@ public class User {
 
     @Column
     private String nickname;
+
+    @Column
+    private LocalTime worktime;
+
 
     @Builder
     private User(String username, String password, String nickname) {
