@@ -9,5 +9,5 @@ public record ClosetUpdateRequest(
         String color,
         String memo,
         String imageUrl,
-        boolean rainOk
+        boolean isRaining
 ) { }

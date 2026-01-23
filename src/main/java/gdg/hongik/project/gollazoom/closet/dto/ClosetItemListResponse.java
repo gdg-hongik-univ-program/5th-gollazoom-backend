@@ -8,6 +8,6 @@ public record ClosetItemListResponse(
         String imageUrl,
         Category category,
         Season season,
-        boolean rainOk
+        boolean isRaining
         // LocalDateTime lastWornAt 은 wears가 구현되고 나서 추가하겠습니다.
 ) { }

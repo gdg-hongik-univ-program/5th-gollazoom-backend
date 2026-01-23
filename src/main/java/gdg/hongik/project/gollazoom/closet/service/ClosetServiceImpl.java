@@ -39,7 +39,7 @@ public class ClosetServiceImpl implements ClosetService {
                 request.color(),
                 request.memo(),
                 request.imageUrl(),
-                request.rainOk()
+                request.isRaining()
         );
 
         Cloth saved = clothRepository.save(cloth);
@@ -93,7 +93,7 @@ public class ClosetServiceImpl implements ClosetService {
                 request.color(),
                 request.memo(),
                 request.imageUrl(),
-                request.rainOk()
+                request.isRaining()
         );
 
         return toResponse(cloth);
@@ -125,7 +125,7 @@ public class ClosetServiceImpl implements ClosetService {
                 cloth.getColor(),
                 cloth.getMemo(),
                 cloth.getImageUrl(),
-                cloth.isRainOk(),
+                cloth.isRaining(),
                 cloth.getCreatedAt()
         );
     }
@@ -141,7 +141,7 @@ public class ClosetServiceImpl implements ClosetService {
                 cloth.getImageUrl(),
                 cloth.getCategory(),
                 cloth.getSeason(),
-                cloth.isRainOk()
+                cloth.isRaining()
         );
     }
 }
