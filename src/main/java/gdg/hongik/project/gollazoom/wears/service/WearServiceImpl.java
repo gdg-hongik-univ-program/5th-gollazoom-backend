@@ -1,6 +1,7 @@
 package gdg.hongik.project.gollazoom.wears.service;
 
 
+import gdg.hongik.project.gollazoom.closet.entity.Category;
 import gdg.hongik.project.gollazoom.closet.entity.Cloth;
 import gdg.hongik.project.gollazoom.closet.repository.ClothRepository;
 import gdg.hongik.project.gollazoom.user.entity.User;
@@ -57,12 +58,16 @@ public class WearServiceImpl implements WearService{
         }
 
         // 모든 조건을 만족했으면 Wear 생성 + WearItem 연결
+        validateWearCombination(clothes);
+
         Wear wear = Wear.of(user, request.date());
         for (Cloth cloth : clothes) {
             wear.addItem(WearItem.of(cloth));
         }
 
         Wear saved = wearRepository.save(wear);
+
+
 
         // 응답 (clothes 반환 순서는 따로 정하지 않았음. 필요 시 Map이나 ORDER BY 조치 취할 것.
         return new WearCreateResponse(
@@ -72,6 +77,8 @@ public class WearServiceImpl implements WearService{
                 saved.getCreatedAt()
         );
     }
+
+
 
     @Override
     @Transactional(readOnly = true)
@@ -170,16 +177,27 @@ public class WearServiceImpl implements WearService{
         wearRepository.delete(wear);
     }
 
-
-
-
-
-
     /** Wear 엔티티에 memo 필드 없음, 고로 null 처리.
      *  API를 통해 memo 필드를 받게 된다면 wear.getMemo()로 바꿀 예정.
      */
     private String getWearMemoOrNull(Wear wear) {
         return null;
+    }
+
+    // Dress(원피스) 조합 검증 로직
+    private void validateWearCombination(List<Cloth> clothes) {
+        boolean hasDress = clothes.stream()
+                .anyMatch(c -> c.getCategory() == Category.DRESS);
+        boolean hasTop = clothes.stream()
+                .anyMatch(c -> c.getCategory() == Category.TOP);
+        boolean hasBottom = clothes.stream()
+                .anyMatch(c -> c.getCategory() == Category.BOTTOM);
+
+        if (hasDress && (hasTop || hasBottom)) {
+            throw new IllegalArgumentException(
+                    "원피스 종류는 상의/하의와 함께 선택할 수 없어요."
+            );
+        }
     }
 
 }
