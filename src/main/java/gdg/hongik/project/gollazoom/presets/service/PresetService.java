@@ -3,9 +3,11 @@ package gdg.hongik.project.gollazoom.presets.service;
 import gdg.hongik.project.gollazoom.closet.entity.Cloth;
 import gdg.hongik.project.gollazoom.closet.repository.ClothRepository;
 import gdg.hongik.project.gollazoom.presets.dto.request.PresetCreateRequest;
+import gdg.hongik.project.gollazoom.presets.dto.request.PresetUpdateRequest;
 import gdg.hongik.project.gollazoom.presets.dto.response.PresetCreateResponse;
 import gdg.hongik.project.gollazoom.presets.dto.response.PresetDetailResponse;
 import gdg.hongik.project.gollazoom.presets.dto.response.PresetItemDetailResponse;
+import gdg.hongik.project.gollazoom.presets.dto.response.PresetListResponse;
 import gdg.hongik.project.gollazoom.presets.entity.Preset;
 import gdg.hongik.project.gollazoom.presets.entity.PresetItem;
 import gdg.hongik.project.gollazoom.presets.entity.PresetSlot;
@@ -16,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
@@ -68,4 +71,36 @@ public class PresetService {
                 items
         );
     }
+    public List<PresetListResponse> getPresetList(Long userId) {
+        return presetRepository.findAllByUserIdOrderByCreatedAtDesc(userId).stream()
+                .map(p->new PresetListResponse(
+                        p.getId(),
+                        p.getName(),
+                        p.getCreatedAt()
+                )).toList();
+    }
+
+    public void updatePreset(Long userId, Long presetId, PresetUpdateRequest request) {
+
+        Preset preset=presetRepository.findByIdAndUserId(presetId,userId)
+                .orElseThrow(()->new IllegalArgumentException("cannot find preset"));
+        if(request.name()!=null){
+            preset.changeName(request.name());
+        }
+        Cloth top=clothRepository.findByIdAndUser_Id(request.topClothId(),userId)
+                .orElseThrow(()->new IllegalArgumentException("cannot find"));
+        Cloth bottom=clothRepository.findByIdAndUser_Id((request.bottomClothId()),userId)
+                .orElseThrow(()->new IllegalArgumentException("cannot find"));
+        List<PresetItem> newItems=new ArrayList<>();
+        newItems.add(PresetItem.of(top, PresetSlot.TOP));
+        newItems.add(PresetItem.of(bottom, PresetSlot.BOTTOM));
+        if(request.outerClothId()!=null){
+            Cloth outer=clothRepository.findByIdAndUser_Id(request.outerClothId(),userId )
+                    .orElseThrow(()->new IllegalArgumentException("cannot find"));
+            newItems.add(PresetItem.of(outer, PresetSlot.OUTER));
+        }
+        preset.replaceItems(newItems);
+        preset.refreshUpdatedAt();
+    }
+
 }
