@@ -34,13 +34,17 @@ public class PresetService {
     public PresetCreateResponse createPreset(Long userId, PresetCreateRequest request) {
         User user=userRepository.findById(userId)
                 .orElseThrow();
-        Cloth top= clothRepository.findByIdAndUser_Id(request.topClothId(),userId)
-                .orElseThrow();
-        Cloth bottom=clothRepository.findByIdAndUser_Id(request.bottomClothId(),userId)
-                .orElseThrow();
         Preset preset=Preset.of(user,request.name());
-        preset.addItem(PresetItem.of(top, PresetSlot.TOP));
-        preset.addItem(PresetItem.of(bottom, PresetSlot.BOTTOM));
+        if (request.dressClothId() != null) {
+            Cloth dress = clothRepository.findByIdAndUser_Id(request.dressClothId(), userId).orElseThrow();
+            preset.addItem(PresetItem.of(dress, PresetSlot.DRESS));
+        }
+        else {
+            Cloth top = clothRepository.findByIdAndUser_Id(request.topClothId(), userId).orElseThrow();
+            Cloth bottom = clothRepository.findByIdAndUser_Id(request.bottomClothId(), userId).orElseThrow();
+            preset.addItem(PresetItem.of(top, PresetSlot.TOP));
+            preset.addItem(PresetItem.of(bottom, PresetSlot.BOTTOM));
+        }
         if (request.outerClothId() != null) {
             Cloth outer = clothRepository.findByIdAndUser_Id(request.outerClothId(), userId)
                     .orElseThrow();
@@ -87,13 +91,17 @@ public class PresetService {
         if(request.name()!=null){
             preset.changeName(request.name());
         }
-        Cloth top=clothRepository.findByIdAndUser_Id(request.topClothId(),userId)
-                .orElseThrow(()->new IllegalArgumentException("cannot find"));
-        Cloth bottom=clothRepository.findByIdAndUser_Id((request.bottomClothId()),userId)
-                .orElseThrow(()->new IllegalArgumentException("cannot find"));
         List<PresetItem> newItems=new ArrayList<>();
-        newItems.add(PresetItem.of(top, PresetSlot.TOP));
-        newItems.add(PresetItem.of(bottom, PresetSlot.BOTTOM));
+        if (request.dressClothId() != null) {
+            Cloth dress = clothRepository.findByIdAndUser_Id(request.dressClothId(), userId).orElseThrow();
+            newItems.add(PresetItem.of(dress, PresetSlot.DRESS));
+        }
+        else {
+            Cloth top = clothRepository.findByIdAndUser_Id(request.topClothId(), userId).orElseThrow();
+            Cloth bottom = clothRepository.findByIdAndUser_Id(request.bottomClothId(), userId).orElseThrow();
+            newItems.add(PresetItem.of(top, PresetSlot.TOP));
+            newItems.add(PresetItem.of(bottom, PresetSlot.BOTTOM));
+        }
         if(request.outerClothId()!=null){
             Cloth outer=clothRepository.findByIdAndUser_Id(request.outerClothId(),userId )
                     .orElseThrow(()->new IllegalArgumentException("cannot find"));

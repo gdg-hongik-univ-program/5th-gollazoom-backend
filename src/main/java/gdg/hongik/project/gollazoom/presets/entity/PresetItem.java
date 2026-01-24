@@ -5,7 +5,6 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.Fetch;
 
 @Getter
 @Entity
@@ -16,13 +15,15 @@ public class PresetItem {
     private Long id;
 
     @ManyToOne(fetch= FetchType.LAZY, optional = false)
-    @JoinColumn(name="preseet_id",nullable = false)
+    @JoinColumn(name="preset_id",nullable = false)
     private Preset preset;
 
     @ManyToOne(fetch= FetchType.LAZY, optional = false)
     @JoinColumn(name="cloth_id",nullable = false)
     private Cloth cloth;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private PresetSlot slot;
 
     private PresetItem(Cloth cloth, PresetSlot slot) {
