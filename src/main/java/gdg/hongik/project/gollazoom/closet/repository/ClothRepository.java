@@ -1,6 +1,7 @@
 package gdg.hongik.project.gollazoom.closet.repository;
 
 import gdg.hongik.project.gollazoom.closet.entity.Cloth;
+import gdg.hongik.project.gollazoom.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -16,4 +17,6 @@ public interface ClothRepository extends JpaRepository<Cloth, Long> {
 
     // wears API에서 여러 옷이 전부 내 옷인지 검증한다.
     List<Cloth> findAllByIdInAndUser_Id(List<Long> clothIds, Long userId);
+
+    Long user(User user);
 }
