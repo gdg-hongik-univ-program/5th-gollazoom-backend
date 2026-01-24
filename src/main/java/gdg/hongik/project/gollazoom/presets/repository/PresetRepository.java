@@ -10,5 +10,4 @@ import java.util.Optional;
 public interface PresetRepository extends JpaRepository<Preset, Long> {
     List<Preset> findAllByUserIdOrderByCreatedAtDesc(Long userId);
     Optional<Preset> findByIdAndUserId(Long id, Long userId);
-    boolean existsByUserIdAndName(Long userId, String name);
 }
