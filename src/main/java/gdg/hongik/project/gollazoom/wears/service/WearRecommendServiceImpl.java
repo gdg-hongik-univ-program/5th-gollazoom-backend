@@ -2,6 +2,7 @@ package gdg.hongik.project.gollazoom.wears.service;
 
 import gdg.hongik.project.gollazoom.closet.entity.Category;
 import gdg.hongik.project.gollazoom.closet.entity.Cloth;
+import gdg.hongik.project.gollazoom.closet.entity.Season;
 import gdg.hongik.project.gollazoom.closet.repository.ClothRepository;
 import gdg.hongik.project.gollazoom.user.entity.User;
 import gdg.hongik.project.gollazoom.user.repository.UserRepository;
@@ -26,14 +27,17 @@ public class WearRecommendServiceImpl implements  WearRecommendService{
     private static final int PENALTY_TEMP = 60;
     private static final int PENALTY_YESTERDAY = 90;
 
+    // 아우터 추천 정책
+    private static final double OUTER_CUTOFF_TEMP = 25.0; // 너무 덥나?
+
     private final UserRepository userRepository;
     private final ClothRepository clothRepository;
     private final WearRepository wearRepository;
 
-    /*
+
     private final OutfitService outfitService;
     private final WeatherService weatherService;
-    */
+
 
     @Override
     public WearRecommendResponse recommend(String username, LocalDate date) {
@@ -41,11 +45,11 @@ public class WearRecommendServiceImpl implements  WearRecommendService{
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
 
         // 1. 날씨 조회 - 구현 시 연결
-        /*
+
         WeatherService.WeatherInfo weather = safeGetWeather(date);
         boolean isRaining = weather.isRaining();
         double temperature = weather.temperature();
-         */
+
 
         // 2. 어제 착용한 옷 조회
         Set<Long> yesterdayClothIds = wearRepository.findByUser_IdAndDate(user.getId(), date.minusDays(1))
@@ -77,7 +81,7 @@ public class WearRecommendServiceImpl implements  WearRecommendService{
             // 3. 조건 위반 체크 (하나라도 위반될 시 프리셋은 더 이상 따지지 않는다.
             if (violatesRainRule(presetClothes, isRaining)) continue;
             if (violatesTemperatureRule(presetClothes, temperature)) continue;
-            if (violateTesterdayRule(presetClothes, yesterdayClothIds)) continue;
+            if (violatesYesterdayRule(presetClothes, yesterdayClothIds)) continue;
 
             // 4. 통과 시 무조건 추천
             candidates.add(new WearRecommendResponse.Recommendation(
@@ -92,7 +96,9 @@ public class WearRecommendServiceImpl implements  WearRecommendService{
 
         // 1. DRESS 단일 코디 후보
         for (Cloth d : dresses) {
-            candidates.add(scoreCandidate("DRESS", List.of(d), isRaining, temperature, yesterdayClothIds));
+            WearRecommendResponse.Recommendation base =
+                scoreCandidate("DRESS", List.of(d), isRaining, temperature, yesterdayClothIds);
+            if (base != null) candidates.add(base);
         }
 
         // 2. TOP + BOTTOM 후보
@@ -101,20 +107,94 @@ public class WearRecommendServiceImpl implements  WearRecommendService{
 
         for (Cloth t : topPool) {
             for (Cloth b : bottomPool) {
-                candidates.add(scoreCandidate("TOP_BOTTOM", List.of(t, b), isRaining, temperature, yesterdayClothIds));
+                WearRecommendResponse.Recommendation base =
+                    scoreCandidate("TOP_BOTTOM", List.of(t, b), isRaining, temperature, yesterdayClothIds);
+                if (base != null) candidates.add(base);
             }
         }
 
         // 3. OUTER 추가 여부
+        List<WearRecommendResponse.Recommendation> withOuter = candidates.stream()
+                .map(base -> applyOuterPolicy(base, outers, isRaining, temperature, yesterdayClothIds))
+                .toList();
+
 
         // 4. 정렬 및 상위 N개 반환
-        List<WearRecommendResponse.Recommendation> top = candidates.stream()
-                .filter(Objects::nonNull)
+        List<WearRecommendResponse.Recommendation> top = withOuter.stream()
                 .sorted(Comparator.comparingInt(WearRecommendResponse.Recommendation::score).reversed())
                 .limit(3) // 일단 상위 3개만 반환, 사실 1개만 반환해도 됨. (강제성)
                 .toList();
 
         return new WearRecommendResponse(date, isRaining, temperature, top);
+    }
+
+    // 제외 디버깅용
+    private WearRecommendResponse.Recommendation appendWarning(
+            WearRecommendResponse.Recommendation base,
+            String warning
+    ) {
+        List<String> newWarnings = new ArrayList<>(base.warnings());
+        newWarnings.add(warning);
+
+        return new WearRecommendResponse.Recommendation(
+                base.type(),
+                base.score(),
+                newWarnings,
+                base.clothIds()
+        );
+    }
+
+    // OUTER 관련 정책, 조합 수를 줄이기 위해 기본 base에 최고 점수 받은 아우터 합체
+    private WearRecommendResponse.Recommendation applyOuterPolicy(
+            WearRecommendResponse.Recommendation base,
+            List<Cloth> outers,
+            boolean isRaining,
+            double temperature,
+            Set<Long> yesterdayClothIds
+    ) {
+        if (base == null) return null;
+
+        // 25도 이상이면 너무 더우니 아우터 제외.
+        if (temperature >= OUTER_CUTOFF_TEMP) {
+            return appendWarning(base, "온도가 높아 아우터 제외");
+        }
+
+        if (outers == null || outers.isEmpty()) return base;
+
+        Cloth outerCandidate = null;
+        int bestOuterScore = Integer.MIN_VALUE;
+        List<String> outerWarnings = List.of();
+
+        for (Cloth o : outers.stream().limit(10).toList()) {
+            WearRecommendResponse.Recommendation scoredOuter =
+                    scoreCandidate("OUTER", List.of(o), isRaining, temperature, yesterdayClothIds);
+            if (scoredOuter == null) continue;
+
+            if (scoredOuter.score() > bestOuterScore) {
+                bestOuterScore = scoredOuter.score();
+                outerCandidate = o;
+                outerWarnings = scoredOuter.warnings();
+            }
+        }
+        if (outerCandidate == null) return base;
+
+        // 합체, base clothIds + outerId
+        List<Long> mergedIds = new ArrayList<>(base.clothIds());
+        mergedIds.add(outerCandidate.getId());
+
+        // 점수 합산(디버깅용)
+        int mergedScore = base.score() + bestOuterScore;
+        List<String> mergedWarnings = new ArrayList<>(base.warnings());
+
+        // 감점 사유도 포함하여 전송
+        mergedWarnings.addAll(outerWarnings);
+
+        return new WearRecommendResponse.Recommendation(
+                base.type(),
+                mergedScore,
+                mergedWarnings,
+                mergedIds
+        );
     }
 
     // 점수 계산 로직
@@ -172,9 +252,32 @@ public class WearRecommendServiceImpl implements  WearRecommendService{
         return clothes.stream().anyMatch(c -> !c.isRaining());
     }
 
-    // 3. 온도 룰 - OUTER 정책이랑 같이 짜야 해서 일단 여기까지
+    // 3. 온도 룰
+    // 3-1. 온도에 따른 계절 분류. 온도는... 일단 내 기준
+    private EnumSet<Season> allowedSeasons(double temperature) {
+        if (temperature < 7.0) {
+            return EnumSet.of(Season.WINTER);
+        }
+        if (temperature >= 22.0) {
+            return EnumSet.of(Season.SUMMER);
+        }
+        return EnumSet.of(Season.SPRING, Season.FALL);
+    }
+
+    // 3-2. 온도 룰 위반 여부: 시즌이 맞는지?
     private boolean violatesTemperatureRule(List<Cloth> clothes, double temperature) {
-        return false;
+        EnumSet<Season> allowed = allowedSeasons(temperature);
+
+        return clothes.stream().anyMatch(c -> {
+            Season s = c.getSeason();
+
+            if (s == null) return false; // 시즌 태그가 없으면 일단 패스
+
+            if (s == Season.ALL) return false; // 사계절 옷은 일단 패스
+
+            return !allowed.contains(s); // allowed 아니면 위반이다.
+        });
+
     }
 
     // 4. 어제 입은 옷 룰
