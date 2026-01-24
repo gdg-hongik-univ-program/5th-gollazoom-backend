@@ -56,4 +56,12 @@ public class PresetController {
         presetService.updatePreset(userId, presetId, request);
         return ResponseEntity.noContent().build();
     }
+    @DeleteMapping("/{presetId}")
+    public ResponseEntity<Void> deletePreset(@PathVariable Long presetId) {
+        Long userId = (Long) SecurityContextHolder.getContext()
+                .getAuthentication()
+                .getPrincipal();
+        presetService.deletePreset(userId, presetId);
+        return ResponseEntity.noContent().build();
+    }
 }
