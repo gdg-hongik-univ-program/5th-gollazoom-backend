@@ -5,10 +5,8 @@ import gdg.hongik.project.gollazoom.presets.dto.request.PresetUpdateRequest;
 import gdg.hongik.project.gollazoom.presets.dto.response.PresetCreateResponse;
 import gdg.hongik.project.gollazoom.presets.dto.response.PresetDetailResponse;
 import gdg.hongik.project.gollazoom.presets.dto.response.PresetListResponse;
-import gdg.hongik.project.gollazoom.presets.entity.Preset;
 import gdg.hongik.project.gollazoom.presets.service.PresetService;
 import lombok.RequiredArgsConstructor;
-import org.apache.coyote.Response;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -17,7 +15,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("api/presets")
+@RequestMapping("/api/presets")
 public class PresetController {
     private final PresetService presetService;
 

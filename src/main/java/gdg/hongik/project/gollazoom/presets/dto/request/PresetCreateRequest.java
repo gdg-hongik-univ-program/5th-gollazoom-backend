@@ -4,6 +4,7 @@ public record PresetCreateRequest (
         String name,
         Long topClothId,
         Long bottomClothId,
+        Long dressClothId,
         Long outerClothId
 ){
 }
