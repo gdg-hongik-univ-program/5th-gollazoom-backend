@@ -102,5 +102,10 @@ public class PresetService {
         preset.replaceItems(newItems);
         preset.refreshUpdatedAt();
     }
-
+    @Transactional
+    public void deletePreset(Long userId, Long presetId) {
+        Preset preset=presetRepository.findByIdAndUserId(presetId,userId)
+                .orElseThrow(()->new IllegalArgumentException("cannot find preset"));
+        presetRepository.delete(preset);
+    }
 }
