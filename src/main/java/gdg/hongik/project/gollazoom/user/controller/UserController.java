@@ -6,6 +6,7 @@ import gdg.hongik.project.gollazoom.user.dto.request.SignupRequest;
 
 import gdg.hongik.project.gollazoom.user.dto.request.WorktimeRequest;
 import gdg.hongik.project.gollazoom.user.dto.response.LoginResponse;
+import gdg.hongik.project.gollazoom.user.dto.response.MyInfoResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -75,5 +76,15 @@ public class UserController {
         userService.updateWorktime(userId, req.worktime());
         return ResponseEntity.noContent().build(); // 204
     }
+
+    @GetMapping("/me")
+    @Operation(summary = "내 정보 조회", description = "로그인한 사용자의 내 정보를 조회합니다")
+    public ResponseEntity<MyInfoResponse> getMe() {
+        Long userId = (Long) SecurityContextHolder.getContext()
+                .getAuthentication().getPrincipal();
+
+        return ResponseEntity.ok(userService.getMyInfo(userId));
+    }
+
 }
 

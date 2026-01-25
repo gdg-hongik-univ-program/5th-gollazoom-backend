@@ -4,6 +4,7 @@ import gdg.hongik.project.gollazoom.security.JwtTokenProvider;
 import gdg.hongik.project.gollazoom.user.dto.request.ChangePasswordRequest;
 import gdg.hongik.project.gollazoom.user.dto.request.LoginRequest;
 import gdg.hongik.project.gollazoom.user.dto.response.LoginResponse;
+import gdg.hongik.project.gollazoom.user.dto.response.MyInfoResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -82,6 +83,21 @@ public class UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("유저 없음"));
         user.setWorktime(LocalTime.parse(worktime));
+    }
+
+    public MyInfoResponse getMyInfo(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("유저 없음"));
+        String worktime = null;
+        if (user.getWorktime() != null) {
+            worktime = user.getWorktime().toString().substring(0, 5);
+        }
+        return new MyInfoResponse(
+                user.getId(),
+                user.getUsername(),
+                user.getNickname(),
+                worktime
+        );
     }
 }
 
