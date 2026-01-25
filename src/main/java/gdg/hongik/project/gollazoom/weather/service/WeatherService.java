@@ -2,6 +2,7 @@ package gdg.hongik.project.gollazoom.weather.service;
 
 import gdg.hongik.project.gollazoom.weather.dto.response.WeatherForecastPointResponse;
 import gdg.hongik.project.gollazoom.weather.dto.response.WeatherTodayResponse;
+import gdg.hongik.project.gollazoom.weather.dto.response.WeatherTodaySummaryResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
@@ -149,4 +150,33 @@ public class WeatherService {
     }
 
     private record BaseInfo(String baseDate, String baseTime) {}
+
+    public WeatherTodaySummaryResponse getTodaySummary() {
+        WeatherTodayResponse today = getTodayForecast(); // 기존 오늘 예보
+
+        double sum = 0.0;
+        int count = 0;
+
+        boolean hasRainOrSnow = false;
+
+        for (var f : today.forecasts()) {
+            if (f.tmp() != null) {
+                sum += f.tmp();
+                count++;
+            }
+            // PTY: 0 아니면 비/눈/소나기
+            if (f.pty() != null && f.pty() != 0) {
+                hasRainOrSnow = true;
+            }
+        }
+
+        double avg = (count == 0) ? 0.0 : sum / count;
+        avg = Math.round(avg * 10.0) / 10.0;
+
+        return new WeatherTodaySummaryResponse(
+                today.date(),
+                avg,
+                hasRainOrSnow
+        );
+    }
 }
