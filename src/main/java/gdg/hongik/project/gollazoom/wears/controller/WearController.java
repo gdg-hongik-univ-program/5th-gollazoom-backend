@@ -14,7 +14,7 @@ import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("api/wears")
+@RequestMapping("/api/wears")
 public class WearController {
 
     private final WearService wearService;

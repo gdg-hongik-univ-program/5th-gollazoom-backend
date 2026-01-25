@@ -71,8 +71,8 @@ public class WearRecommendServiceImpl implements  WearRecommendService{
 
 
     @Override
-    public WearRecommendResponse recommend(String username, LocalDate date) {
-        User user = userRepository.findByUsername(username)
+    public WearRecommendResponse recommend(Long userId, LocalDate date) {
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
 
         // 1. 날씨 조회 - 구현 시 연결
