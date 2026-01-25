@@ -4,14 +4,21 @@ import gdg.hongik.project.gollazoom.closet.entity.Category;
 import gdg.hongik.project.gollazoom.closet.entity.Cloth;
 import gdg.hongik.project.gollazoom.closet.entity.Season;
 import gdg.hongik.project.gollazoom.closet.repository.ClothRepository;
+import gdg.hongik.project.gollazoom.presets.dto.response.PresetDetailResponse;
+import gdg.hongik.project.gollazoom.presets.dto.response.PresetItemDetailResponse;
+import gdg.hongik.project.gollazoom.presets.dto.response.PresetListResponse;
+import gdg.hongik.project.gollazoom.presets.service.PresetService;
 import gdg.hongik.project.gollazoom.user.entity.User;
 import gdg.hongik.project.gollazoom.user.repository.UserRepository;
 import gdg.hongik.project.gollazoom.wears.dto.WearRecommendResponse;
 import gdg.hongik.project.gollazoom.wears.entity.Wear;
 import gdg.hongik.project.gollazoom.wears.repository.WearRepository;
+import gdg.hongik.project.gollazoom.weather.dto.response.WeatherTodaySummaryResponse;
+import gdg.hongik.project.gollazoom.weather.service.WeatherService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.time.format.DateTimeFormatter;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -35,8 +42,32 @@ public class WearRecommendServiceImpl implements  WearRecommendService{
     private final WearRepository wearRepository;
 
 
-    private final OutfitService outfitService;
+    private final PresetService presetService;
     private final WeatherService weatherService;
+
+    private WeatherTodaySummaryResponse safeGetWeatherSummary(LocalDate date) {
+        try {
+            // 현재 오늘 기준 날짜만 제공하고 있음
+            if (LocalDate.now().equals(date)) {
+                return weatherService.getTodaySummary();
+            }
+
+            // 따라서 오늘이 아닌 날짜의 날씨는 일단 평균 날씨로 가정하겠음.
+            return new WeatherTodaySummaryResponse(
+                    date.format(DateTimeFormatter.ofPattern("yyyyMMdd")),
+                    20.0,
+                    false
+            );
+
+        } catch (Exception e) {
+            // API 실패 시
+            return new WeatherTodaySummaryResponse(
+                    date.format(DateTimeFormatter.ofPattern("yyyyMMdd")),
+                    20.0,
+                    false
+            );
+        }
+    }
 
 
     @Override
@@ -46,9 +77,10 @@ public class WearRecommendServiceImpl implements  WearRecommendService{
 
         // 1. 날씨 조회 - 구현 시 연결
 
-        WeatherService.WeatherInfo weather = safeGetWeather(date);
-        boolean isRaining = weather.isRaining();
-        double temperature = weather.temperature();
+        WeatherTodaySummaryResponse weather = safeGetWeatherSummary(date);
+
+        boolean isRaining = weather.hasRainOrSnow();
+        double temperature = weather.avgTemp();
 
 
         // 2. 어제 착용한 옷 조회
@@ -67,9 +99,13 @@ public class WearRecommendServiceImpl implements  WearRecommendService{
         List<WearRecommendResponse.Recommendation> candidates = new ArrayList<>();
 
         // 프리셋 코디 1순위. 단, 하나라도 위반되면 고려하지 않는다.
-        List<OutfitService.OutfitDto> presets = outfitService.listMyOutfits(username);
-        for (OutfitService.OutfitDto preset : presets) {
-            List<Long> clothIds = preset.clothIds();
+        List<PresetListResponse> presets = presetService.getPresetList(user.getId());
+        for (PresetListResponse preset : presets) {
+            PresetDetailResponse detail = presetService.getPresetDetail(user.getId(), preset.presetId());
+
+            List<Long> clothIds = detail.items().stream()
+                    .map(PresetItemDetailResponse::clothId)
+                    .toList();
 
             // 1. 프리셋 옷들이 전부 내 옷인지 검증과 동시에 엔티티 확보
             List<Cloth> presetClothes = clothRepository.findAllByIdInAndUser_Id(clothIds, user.getId());
@@ -294,14 +330,6 @@ public class WearRecommendServiceImpl implements  WearRecommendService{
 
     private List<Cloth> filterByCategory(List<Cloth> all, Category category) {
         return all.stream().filter(c -> c.getCategory() == category).toList();
-    }
-
-    private WeatherService.WeatherInfo safeGetWeather(LocalDate date) {
-        try {
-            return weatherService.getWeather(date);
-        } catch (Exception e) {
-            return new WeatherService.WeatherInfo(false, 20.0); // 연결 실패 시 20도로 설정됨.
-        }
     }
 
 }
