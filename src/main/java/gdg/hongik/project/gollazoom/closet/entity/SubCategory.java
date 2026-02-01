@@ -11,6 +11,5 @@ public enum SubCategory {
     PADDING,
     JEANS,
     SLACKS,
-    SKIRT;
-
+    SKIRT
 }
