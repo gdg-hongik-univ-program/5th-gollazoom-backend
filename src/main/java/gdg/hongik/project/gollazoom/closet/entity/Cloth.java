@@ -43,6 +43,10 @@ public class Cloth extends BaseEntity {
     @Column(nullable = false)
     private boolean isRaining;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private WashStatus washStatus = WashStatus.AVAILABLE; // 기본값
+
     public Cloth(User user, Category category, Season season, String color, String memo, String imageUrl, boolean isRaining) {
         this.user = user;
         this.category = category;
@@ -53,6 +57,7 @@ public class Cloth extends BaseEntity {
         this.isRaining = isRaining;
     }
 
+    // update 메서드에 washStatus는 넣지 않음.
     public void update(Category category, Season season, String color, String memo, String imageUrl, boolean isRaining) {
         if (category != null) this.category = category;
         if (season != null) this.season = season;
