@@ -1,17 +1,17 @@
 package gdg.hongik.project.gollazoom.user.controller;
 
-import gdg.hongik.project.gollazoom.user.dto.request.ChangePasswordRequest;
-import gdg.hongik.project.gollazoom.user.dto.request.LoginRequest;
-import gdg.hongik.project.gollazoom.user.dto.request.SignupRequest;
+import gdg.hongik.project.gollazoom.global.api.ApiResponse;
+import gdg.hongik.project.gollazoom.user.dto.request.*;
 
-import gdg.hongik.project.gollazoom.user.dto.request.WorktimeRequest;
 import gdg.hongik.project.gollazoom.user.dto.response.LoginResponse;
 import gdg.hongik.project.gollazoom.user.dto.response.MyInfoResponse;
+import gdg.hongik.project.gollazoom.user.dto.response.UserWashSettingResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import gdg.hongik.project.gollazoom.user.dto.response.UserResponse;
@@ -84,6 +84,22 @@ public class UserController {
                 .getAuthentication().getPrincipal();
 
         return ResponseEntity.ok(userService.getMyInfo(userId));
+    }
+
+    @GetMapping("/wash-setting")
+    public ApiResponse<UserWashSettingResponse> getWashSetting(
+            @AuthenticationPrincipal Long userId
+    ) {
+        return ApiResponse.ok( null, userService.getWashSetting(userId));
+    }
+
+    @PatchMapping("/wash-setting")
+    public ApiResponse<UserWashSettingResponse> updateWashSetting(
+            @AuthenticationPrincipal Long userId,
+            @RequestBody UserWashSettingUpdateRequest request
+    ) {
+        return ApiResponse.ok("세탁 기능 설정이 변경되었어요.",
+                userService.updateWashSetting(userId, request));
     }
 
 }
