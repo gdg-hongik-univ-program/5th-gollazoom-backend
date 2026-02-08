@@ -1,11 +1,9 @@
 package gdg.hongik.project.gollazoom.closet.service;
 
-import gdg.hongik.project.gollazoom.closet.dto.ClosetCreateRequest;
-import gdg.hongik.project.gollazoom.closet.dto.ClosetItemListResponse;
-import gdg.hongik.project.gollazoom.closet.dto.ClosetResponse;
-import gdg.hongik.project.gollazoom.closet.dto.ClosetUpdateRequest;
+import gdg.hongik.project.gollazoom.closet.dto.*;
 import gdg.hongik.project.gollazoom.closet.entity.Category;
 import gdg.hongik.project.gollazoom.closet.entity.Cloth;
+import gdg.hongik.project.gollazoom.closet.entity.WashStatus;
 import gdg.hongik.project.gollazoom.closet.repository.ClothRepository;
 import gdg.hongik.project.gollazoom.user.entity.User;
 import gdg.hongik.project.gollazoom.user.repository.UserRepository;
@@ -66,9 +64,20 @@ public class ClosetServiceImpl implements ClosetService {
      */
     @Override
     @Transactional(readOnly = true)
-    public List<ClosetItemListResponse> list(Long userId) {
-        return clothRepository.findAllByUser_IdOrderByCreatedAtDesc(userId)
-                .stream()
+    public List<ClosetItemListResponse> list(Long userId, boolean includeWashing) {
+        List<Cloth> clothes;
+
+        // 세탁 중인 옷을 조회에 포함시킬 것인가?
+        if (includeWashing) {
+            clothes = clothRepository.findAllByUser_IdOrderByCreatedAtDesc(userId);
+        } else {
+            clothes = clothRepository.findAllByUser_IdAndWashStatusNotOrderByCreatedAtDesc(
+                    userId,
+                    WashStatus.WASHING
+            );
+        }
+
+        return clothes.stream()
                 .map(this::toListItem)
                 .toList();
     }
@@ -158,7 +167,8 @@ public class ClosetServiceImpl implements ClosetService {
                 cloth.getMemo(),
                 cloth.getImageUrl(),
                 cloth.isRaining(),
-                cloth.getCreatedAt()
+                cloth.getCreatedAt(),
+                cloth.getLastWornAt()
         );
     }
 
@@ -174,7 +184,42 @@ public class ClosetServiceImpl implements ClosetService {
                 cloth.getImageUrl(),
                 cloth.getCategory(),
                 cloth.getSeason(),
-                cloth.isRaining()
+                cloth.isRaining(),
+                cloth.getWashStatus(),
+                cloth.getLastWornAt()
         );
+    }
+
+    @Override
+    public void updateWashStatus(Long userId, Long clothId, ClothWashStatusUpdateRequest request) {
+        if (request == null || request.washStatus() == null) {
+            throw new IllegalArgumentException("washStatus는 필수입니다.");
+        }
+
+        Cloth cloth = clothRepository.findByIdAndUser_Id(clothId, userId)
+                .orElseThrow(() -> new IllegalArgumentException("옷을 찾을 수 없습니다."));
+
+        cloth.changeWashStatus(request.washStatus());
+    }
+
+    @Override
+    public void updateWashStatusBulk(Long userId, ClothWashStatusBulkUpdateRequest request) {
+        if (request == null || request.washStatus() == null) {
+            throw new IllegalArgumentException("세탁 상태를 표시해주세요.");
+        }
+        if (request.clothIds() == null || request.clothIds().isEmpty()) {
+            throw new IllegalArgumentException("세탁상태를 변경할 옷을 선택해주세요.");
+        }
+
+        List<Cloth> clothes = clothRepository.findAllByIdInAndUser_Id(request.clothIds(), userId);
+
+        // 요청 개수 != 조회 개수면 남의 옷이 섞였거나 없는 id
+        if (clothes.size() != request.clothIds().size()) {
+            throw new IllegalArgumentException("요청한 clothIds 중 유효하지 않은 값이 포함되어 있습니다.");
+        }
+
+        for (Cloth c : clothes) {
+            c.changeWashStatus(request.washStatus());
+        }
     }
 }

@@ -7,6 +7,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -47,6 +49,9 @@ public class Cloth extends BaseEntity {
     @Column(nullable = false, length = 20)
     private WashStatus washStatus = WashStatus.AVAILABLE; // 기본값
 
+    @Column
+    private LocalDateTime lastWornAt;
+
     public Cloth(User user, Category category, Season season, String color, String memo, String imageUrl, boolean isRaining) {
         this.user = user;
         this.category = category;
@@ -65,5 +70,13 @@ public class Cloth extends BaseEntity {
         if (memo != null) this.memo = memo;
         if (imageUrl != null) this.imageUrl = imageUrl;
         this.isRaining = isRaining;
+    }
+
+    public void changeWashStatus(WashStatus washStatus) {
+        this.washStatus = washStatus;
+    }
+
+    public void updateLastWornAt(LocalDateTime time) {
+        this.lastWornAt = time;
     }
 }

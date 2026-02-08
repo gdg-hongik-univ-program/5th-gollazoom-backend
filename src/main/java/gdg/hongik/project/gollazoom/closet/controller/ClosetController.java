@@ -1,14 +1,14 @@
 package gdg.hongik.project.gollazoom.closet.controller;
 
-import gdg.hongik.project.gollazoom.closet.dto.ClosetCreateRequest;
-import gdg.hongik.project.gollazoom.closet.dto.ClosetItemListResponse;
-import gdg.hongik.project.gollazoom.closet.dto.ClosetResponse;
-import gdg.hongik.project.gollazoom.closet.dto.ClosetUpdateRequest;
+import gdg.hongik.project.gollazoom.closet.dto.*;
 import gdg.hongik.project.gollazoom.closet.service.ClosetService;
+import gdg.hongik.project.gollazoom.global.api.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -47,18 +47,18 @@ public class ClosetController {
 
     /**
      * 옷장에 등록된 모든 옷을 조회합니다.
-     *
-     * @param auth
-     * @return
+     * @param userId : 유저 정보
+     * @param includeWashing : 세탁 중인 옷들도 포함하여 보여줄지 판단합니다.
+     * @return : 옷 리스트
      */
     @GetMapping
     @Operation(summary = "모든 옷 조회", description = "옷장에 등록된 모든 옷을 조회합니다")
     public List<ClosetItemListResponse> clothingList(
-            // required = false 위와 같은 이유.
-            Authentication auth
+            @AuthenticationPrincipal Long userId,
+            // 추천에서는 세탁중 옷 제외. 추후 흐리게 보이게 하기 등 조치 취해야 한다면 수정 가능.
+            @RequestParam(defaultValue = "false") boolean includeWashing
     ) {
-        Long userId = (Long) auth.getPrincipal();
-        return closetService.list(userId);
+        return closetService.list(userId, includeWashing);
     }
 
     /**
@@ -119,4 +119,27 @@ public class ClosetController {
         Long userId = (Long) auth.getPrincipal();
         closetService.delete(userId, clothId);
     }
+
+    // 단일 변경
+    @PatchMapping("/clothes/{clothId}/wash-status")
+    public ResponseEntity<ApiResponse<Void>> updateWashStatus(
+            @AuthenticationPrincipal Long userId,
+            @PathVariable Long clothId,
+            @RequestBody ClothWashStatusUpdateRequest request
+    ) {
+        closetService.updateWashStatus(userId, clothId, request);
+        return ResponseEntity.ok(ApiResponse.ok(null));
+    }
+
+    // 일괄 변경
+    @PatchMapping("/clothes/wash-status")
+    public ResponseEntity<ApiResponse<Void>> updateWashStatusBulk(
+            @AuthenticationPrincipal Long userId,
+            @RequestBody ClothWashStatusBulkUpdateRequest request
+    ) {
+        closetService.updateWashStatusBulk(userId, request);
+        return ResponseEntity.ok(ApiResponse.ok(null));
+    }
+
+
 }

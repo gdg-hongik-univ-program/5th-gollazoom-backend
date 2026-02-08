@@ -1,13 +1,16 @@
 package gdg.hongik.project.gollazoom.presets.controller;
 
+import gdg.hongik.project.gollazoom.global.api.ApiResponse;
 import gdg.hongik.project.gollazoom.presets.dto.request.PresetCreateRequest;
 import gdg.hongik.project.gollazoom.presets.dto.request.PresetUpdateRequest;
 import gdg.hongik.project.gollazoom.presets.dto.response.PresetCreateResponse;
 import gdg.hongik.project.gollazoom.presets.dto.response.PresetDetailResponse;
 import gdg.hongik.project.gollazoom.presets.dto.response.PresetListResponse;
+import gdg.hongik.project.gollazoom.presets.dto.response.PresetWashCheckResponse;
 import gdg.hongik.project.gollazoom.presets.service.PresetService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,6 +36,15 @@ public class PresetController {
                 .getAuthentication()
                 .getPrincipal();
         return ResponseEntity.ok(presetService.getPresetDetail(userId, presetId));
+    }
+
+    @GetMapping("/{presetId}/washCheck")
+    public ApiResponse<PresetWashCheckResponse> washCheck(
+            @AuthenticationPrincipal Long userId,
+            @PathVariable Long presetId
+    ) {
+        PresetWashCheckResponse data = presetService.washCheck(userId, presetId);
+        return ApiResponse.ok(null, data);
     }
 
     @GetMapping
