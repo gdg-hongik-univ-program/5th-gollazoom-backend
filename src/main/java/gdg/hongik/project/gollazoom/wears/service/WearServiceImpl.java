@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -63,6 +64,10 @@ public class WearServiceImpl implements WearService{
         Wear wear = Wear.of(user, request.date());
         for (Cloth cloth : clothes) {
             wear.addItem(WearItem.of(cloth));
+        }
+
+        for (WearItem item : wear.getItems()) {
+            item.getCloth().updateLastWornAt(LocalDateTime.now());
         }
 
         Wear saved = wearRepository.save(wear);

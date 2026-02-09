@@ -13,6 +13,6 @@ public record ClosetResponse(
         String memo,
         String imageUrl,
         boolean isRaining,
-        LocalDateTime createAt
-        // LocalDateTime lastWornAt 역시 구현되면 추가하겠습니다.
+        LocalDateTime createAt,
+        LocalDateTime lastWornAt
 ) {}

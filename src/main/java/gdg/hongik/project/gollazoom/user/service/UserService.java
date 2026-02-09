@@ -4,8 +4,10 @@ import gdg.hongik.project.gollazoom.security.JwtTokenProvider;
 import gdg.hongik.project.gollazoom.user.dto.request.ChangeNicknameRequest;
 import gdg.hongik.project.gollazoom.user.dto.request.ChangePasswordRequest;
 import gdg.hongik.project.gollazoom.user.dto.request.LoginRequest;
+import gdg.hongik.project.gollazoom.user.dto.request.UserWashSettingUpdateRequest;
 import gdg.hongik.project.gollazoom.user.dto.response.LoginResponse;
 import gdg.hongik.project.gollazoom.user.dto.response.MyInfoResponse;
+import gdg.hongik.project.gollazoom.user.dto.response.UserWashSettingResponse;
 import gdg.hongik.project.gollazoom.user.dto.response.UsernameResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -102,6 +104,17 @@ public class UserService {
         );
     }
 
+    @Transactional(readOnly = true)
+    public UserWashSettingResponse getWashSetting(Long userId) {
+        User user = userRepository.findById(userId).orElseThrow();
+        return UserWashSettingResponse.from(user.isUsingWashUpTech());
+    }
+
+    @Transactional
+    public UserWashSettingResponse updateWashSetting(Long userId, UserWashSettingUpdateRequest request) {
+        User user = userRepository.findById(userId).orElseThrow();
+        user.changeIsUsingWashUpTech(request.isUsingWashUpTech());
+        return UserWashSettingResponse.from(user.isUsingWashUpTech());
     public UsernameResponse getMyUsername(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("유저 없음"));

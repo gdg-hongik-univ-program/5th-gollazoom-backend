@@ -1,16 +1,15 @@
 package gdg.hongik.project.gollazoom.closet.service;
 
-import gdg.hongik.project.gollazoom.closet.dto.ClosetCreateRequest;
-import gdg.hongik.project.gollazoom.closet.dto.ClosetItemListResponse;
-import gdg.hongik.project.gollazoom.closet.dto.ClosetResponse;
-import gdg.hongik.project.gollazoom.closet.dto.ClosetUpdateRequest;
+import gdg.hongik.project.gollazoom.closet.dto.*;
 
 import java.util.List;
 
 public interface ClosetService {
     ClosetResponse create(Long userId, ClosetCreateRequest request);
-    List<ClosetItemListResponse> list(Long userId);
+    List<ClosetItemListResponse> list(Long userId, boolean includeWashing);
     ClosetResponse get(Long userId, Long clothId);
     ClosetResponse update(Long userId, Long clothId, ClosetUpdateRequest request);
     void delete(Long userId, Long clothId);
+    void updateWashStatus(Long userId, Long clothId, ClothWashStatusUpdateRequest request);
+    void updateWashStatusBulk(Long userId, ClothWashStatusBulkUpdateRequest request);
 }

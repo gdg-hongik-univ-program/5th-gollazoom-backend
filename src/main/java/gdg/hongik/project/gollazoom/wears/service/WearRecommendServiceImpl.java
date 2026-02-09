@@ -3,6 +3,7 @@ package gdg.hongik.project.gollazoom.wears.service;
 import gdg.hongik.project.gollazoom.closet.entity.Category;
 import gdg.hongik.project.gollazoom.closet.entity.Cloth;
 import gdg.hongik.project.gollazoom.closet.entity.Season;
+import gdg.hongik.project.gollazoom.closet.entity.WashStatus;
 import gdg.hongik.project.gollazoom.closet.repository.ClothRepository;
 import gdg.hongik.project.gollazoom.presets.dto.response.PresetDetailResponse;
 import gdg.hongik.project.gollazoom.presets.dto.response.PresetItemDetailResponse;
@@ -90,11 +91,10 @@ public class WearRecommendServiceImpl implements  WearRecommendService{
 
         // 3. 내 옷 전체 로딩 후 카테고리 분류
         List<Cloth> allClothes = clothRepository.findAllByUser_IdOrderByCreatedAtDesc(user.getId());
-
-        List<Cloth> dresses = filterByCategory(allClothes, Category.DRESS);
-        List<Cloth> tops = filterByCategory(allClothes, Category.TOP);
-        List<Cloth> bottoms = filterByCategory(allClothes, Category.BOTTOM);
-        List<Cloth> outers = filterByCategory(allClothes, Category.OUTER);
+        // 정책 추가 : 세탁중이 아닌 옷만 우선적으로 추천 대상 옷에 포함시킨다.
+        List<Cloth> usableClothes = allClothes.stream()
+                .filter(c -> c.getWashStatus() != WashStatus.WASHING)
+                .toList();
 
         List<WearRecommendResponse.Recommendation> candidates = new ArrayList<>();
 
@@ -115,6 +115,7 @@ public class WearRecommendServiceImpl implements  WearRecommendService{
             if (!isValidCombination(presetClothes)) continue;
 
             // 3. 조건 위반 체크 (하나라도 위반될 시 프리셋은 더 이상 따지지 않는다.
+            if (presetClothes.stream().anyMatch(c -> c.getWashStatus() == WashStatus.WASHING)) continue;
             if (violatesRainRule(presetClothes, isRaining)) continue;
             if (violatesTemperatureRule(presetClothes, temperature)) continue;
             if (violatesYesterdayRule(presetClothes, yesterdayClothIds)) continue;
@@ -129,6 +130,12 @@ public class WearRecommendServiceImpl implements  WearRecommendService{
         }
 
         // 프리셋이 만족하지 않으면 continue로 인해 여기로 오게 됨.
+
+        List<Cloth> dresses = filterByCategory(usableClothes, Category.DRESS);
+        List<Cloth> tops = filterByCategory(usableClothes, Category.TOP);
+        List<Cloth> bottoms = filterByCategory(usableClothes, Category.BOTTOM);
+        final List<Cloth> primaryOuters = filterByCategory(usableClothes, Category.OUTER);
+        List<Cloth> fallbackOuters = primaryOuters;
 
         // 1. DRESS 단일 코디 후보
         for (Cloth d : dresses) {
@@ -148,20 +155,82 @@ public class WearRecommendServiceImpl implements  WearRecommendService{
                 if (base != null) candidates.add(base);
             }
         }
+        // 3. 후보 부족 시 세탁 중 옷 포함해서 다시 후보 추가 + 경고 메시지 반환
+        if (candidates.size() < 3) {
+            addFallbackCandidates(
+                    candidates,
+                    filterByCategory(allClothes, Category.DRESS),
+                    filterByCategory(allClothes, Category.TOP),
+                    filterByCategory(allClothes, Category.BOTTOM),
+                    isRaining, temperature, yesterdayClothIds
+            );
+            // 조합 폭발 막기위해 outer 따로 처리
+            fallbackOuters = filterByCategory(allClothes, Category.OUTER);
+        }
 
-        // 3. OUTER 추가 여부
+        // toList 불변 관련 컴파일 에러를 막기 위해 생성.
+        final List<Cloth> finalOuters = fallbackOuters;
+
+        // 4. OUTER 추가 여부
         List<WearRecommendResponse.Recommendation> withOuter = candidates.stream()
-                .map(base -> applyOuterPolicy(base, outers, isRaining, temperature, yesterdayClothIds))
+                .map(base -> applyOuterPolicy(base, finalOuters, isRaining, temperature, yesterdayClothIds))
                 .toList();
 
 
-        // 4. 정렬 및 상위 N개 반환
+        // 5. 정렬 및 상위 N개 반환
         List<WearRecommendResponse.Recommendation> top = withOuter.stream()
                 .sorted(Comparator.comparingInt(WearRecommendResponse.Recommendation::score).reversed())
                 .limit(3) // 일단 상위 3개만 반환, 사실 1개만 반환해도 됨. (강제성)
                 .toList();
 
         return new WearRecommendResponse(date, isRaining, temperature, top);
+    }
+
+    // fallback 후보 추가
+    private void addFallbackCandidates(
+            List<WearRecommendResponse.Recommendation> candidates,
+            List<Cloth> dresses,
+            List<Cloth> tops,
+            List<Cloth> bottoms,
+            boolean isRaining,
+            double temperature,
+            Set<Long> yesterdayClothIds
+    ) {
+        for (Cloth d : dresses) {
+            WearRecommendResponse.Recommendation r =
+                    scoreCandidate("DRESS", List.of(d), isRaining, temperature, yesterdayClothIds);
+            if (r != null) candidates.add(addWashFallbackWarningIfNeeded(r, List.of(d)));
+        }
+
+        List<Cloth> topPool = tops.stream().limit(10).toList();
+        List<Cloth> bottomPool = bottoms.stream().limit(10).toList();
+
+        for (Cloth t : topPool) {
+            for (Cloth b : bottomPool) {
+                List<Cloth> combo = List.of(t, b);
+                WearRecommendResponse.Recommendation r =
+                        scoreCandidate("TOP_BOTTOM", combo, isRaining, temperature, yesterdayClothIds);
+                if (r != null) candidates.add(addWashFallbackWarningIfNeeded(r, combo));
+            }
+        }
+    }
+
+    private WearRecommendResponse.Recommendation addWashFallbackWarningIfNeeded(
+            WearRecommendResponse.Recommendation base,
+            List<Cloth> clothes
+    ) {
+        boolean hasWashing = clothes.stream().anyMatch(c -> c.getWashStatus() == WashStatus.WASHING);
+        if (!hasWashing) return base;
+
+        List<String> warnings = new ArrayList<>(base.warnings());
+        warnings.add("추천 코디 후보가 부족하여 세탁중인 의상이 포함될 수 있어요.");
+
+        return new WearRecommendResponse.Recommendation(
+                base.type(),
+                base.score(),
+                warnings,
+                base.clothIds()
+        );
     }
 
     // 제외 디버깅용

@@ -1,13 +1,11 @@
 package gdg.hongik.project.gollazoom.presets.service;
 
 import gdg.hongik.project.gollazoom.closet.entity.Cloth;
+import gdg.hongik.project.gollazoom.closet.entity.WashStatus;
 import gdg.hongik.project.gollazoom.closet.repository.ClothRepository;
 import gdg.hongik.project.gollazoom.presets.dto.request.PresetCreateRequest;
 import gdg.hongik.project.gollazoom.presets.dto.request.PresetUpdateRequest;
-import gdg.hongik.project.gollazoom.presets.dto.response.PresetCreateResponse;
-import gdg.hongik.project.gollazoom.presets.dto.response.PresetDetailResponse;
-import gdg.hongik.project.gollazoom.presets.dto.response.PresetItemDetailResponse;
-import gdg.hongik.project.gollazoom.presets.dto.response.PresetListResponse;
+import gdg.hongik.project.gollazoom.presets.dto.response.*;
 import gdg.hongik.project.gollazoom.presets.entity.Preset;
 import gdg.hongik.project.gollazoom.presets.entity.PresetItem;
 import gdg.hongik.project.gollazoom.presets.entity.PresetSlot;
@@ -115,5 +113,19 @@ public class PresetService {
         Preset preset=presetRepository.findByIdAndUserId(presetId,userId)
                 .orElseThrow(()->new IllegalArgumentException("cannot find preset"));
         presetRepository.delete(preset);
+    }
+
+    public PresetWashCheckResponse washCheck(Long userId, Long presetId) {
+        Preset preset = presetRepository.findByIdAndUserId(presetId, userId)
+                .orElseThrow(() -> new IllegalArgumentException("프리셋을 찾을 수 없습니다."));
+
+        List<Long> washingIds = preset.getItems().stream()
+                .map(PresetItem::getCloth)
+                .filter(c -> c.getWashStatus() == WashStatus.WASHING)
+                .map(Cloth::getId)
+                .toList();
+
+        // true일 경우, 세탁중인 옷의 id를 반환한다.
+        return new PresetWashCheckResponse(!washingIds.isEmpty(), washingIds);
     }
 }

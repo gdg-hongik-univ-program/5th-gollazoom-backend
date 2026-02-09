@@ -30,6 +30,9 @@ public class User {
     @Column
     private LocalTime worktime;
 
+    @Column(nullable = false)
+    private boolean isUsingWashUpTech = true; // 기본값으로 세탁 기능 사용을 true로 지정.
+
 
     @Builder
     private User(String username, String password, String nickname) {
@@ -37,4 +40,8 @@ public class User {
         this.password = password;
         this.nickname = nickname;
     }
+
+    public void changeIsUsingWashUpTech(boolean isUsingWashUpTech) {
+        this.isUsingWashUpTech = isUsingWashUpTech;
+    } // 세탁 기능 사용 변경
 }
