@@ -1,12 +1,14 @@
 package gdg.hongik.project.gollazoom.user.service;
 
 import gdg.hongik.project.gollazoom.security.JwtTokenProvider;
+import gdg.hongik.project.gollazoom.user.dto.request.ChangeNicknameRequest;
 import gdg.hongik.project.gollazoom.user.dto.request.ChangePasswordRequest;
 import gdg.hongik.project.gollazoom.user.dto.request.LoginRequest;
 import gdg.hongik.project.gollazoom.user.dto.request.UserWashSettingUpdateRequest;
 import gdg.hongik.project.gollazoom.user.dto.response.LoginResponse;
 import gdg.hongik.project.gollazoom.user.dto.response.MyInfoResponse;
 import gdg.hongik.project.gollazoom.user.dto.response.UserWashSettingResponse;
+import gdg.hongik.project.gollazoom.user.dto.response.UsernameResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -113,6 +115,17 @@ public class UserService {
         User user = userRepository.findById(userId).orElseThrow();
         user.changeIsUsingWashUpTech(request.isUsingWashUpTech());
         return UserWashSettingResponse.from(user.isUsingWashUpTech());
+    public UsernameResponse getMyUsername(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("유저 없음"));
+        return new UsernameResponse(user.getUsername());
+    }
+
+    @Transactional
+    public void changeNickname(Long userId, ChangeNicknameRequest req) {
+        User user= userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("유저 없음"));
+        user.setNickname(req.nickname());
     }
 }
 

@@ -6,6 +6,7 @@ import gdg.hongik.project.gollazoom.user.dto.request.*;
 import gdg.hongik.project.gollazoom.user.dto.response.LoginResponse;
 import gdg.hongik.project.gollazoom.user.dto.response.MyInfoResponse;
 import gdg.hongik.project.gollazoom.user.dto.response.UserWashSettingResponse;
+import gdg.hongik.project.gollazoom.user.dto.response.UsernameResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -102,5 +103,21 @@ public class UserController {
                 userService.updateWashSetting(userId, request));
     }
 
+    @GetMapping("/me/username")
+    @Operation(summary = "아이디 조회")
+    public ResponseEntity<UsernameResponse> getMyUsername(){
+        Long userId = (Long) SecurityContextHolder.getContext()
+                .getAuthentication().getPrincipal();
+        return  ResponseEntity.ok(userService.getMyUsername(userId));
+    }
+
+    @PatchMapping("/me/nickname")
+    @Operation(summary = "닉네임 변경")
+    public ResponseEntity<Void> changeNickname(@Valid @RequestBody ChangeNicknameRequest req) {
+        Long userId = (Long) SecurityContextHolder.getContext()
+                .getAuthentication().getPrincipal();
+        userService.changeNickname(userId,req);
+        return  ResponseEntity.noContent().build();
+    }
 }
 
