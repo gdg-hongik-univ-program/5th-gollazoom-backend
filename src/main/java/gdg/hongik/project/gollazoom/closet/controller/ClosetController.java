@@ -128,7 +128,7 @@ public class ClosetController {
             @RequestBody ClothWashStatusUpdateRequest request
     ) {
         closetService.updateWashStatus(userId, clothId, request);
-        return ResponseEntity.ok(ApiResponse.ok(null));
+        return ResponseEntity.ok(ApiResponse.ok("세탁 상태가 변경되었어요.", null));
     }
 
     // 일괄 변경
@@ -138,7 +138,7 @@ public class ClosetController {
             @RequestBody ClothWashStatusBulkUpdateRequest request
     ) {
         closetService.updateWashStatusBulk(userId, request);
-        return ResponseEntity.ok(ApiResponse.ok(null));
+        return ResponseEntity.ok(ApiResponse.ok("세탁 상태가 변경되었어요.", null));
     }
 
 
