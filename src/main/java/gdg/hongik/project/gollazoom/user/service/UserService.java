@@ -115,6 +115,9 @@ public class UserService {
         User user = userRepository.findById(userId).orElseThrow();
         user.changeIsUsingWashUpTech(request.isUsingWashUpTech());
         return UserWashSettingResponse.from(user.isUsingWashUpTech());
+    }
+
+    @Transactional
     public UsernameResponse getMyUsername(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("유저 없음"));
