@@ -20,7 +20,7 @@ public interface ClothRepository extends JpaRepository<Cloth, Long> {
     List<Cloth> findAllByIdInAndUser_Id(List<Long> clothIds, Long userId);
 
     // 세탁중인 옷을 제외하고 가져오기
-    List<Cloth> findAllByUser_IdAndWashStatusNotOrderByCreatedAtDesc(Long userId, WashStatus washStatus);
+    List<Cloth> findAllByUser_IdAndWashStatusOrderByCreatedAtDesc(Long userId, WashStatus washStatus);
 
     Long user(User user);
 }

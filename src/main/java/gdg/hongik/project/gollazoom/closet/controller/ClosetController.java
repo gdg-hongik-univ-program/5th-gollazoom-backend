@@ -1,6 +1,7 @@
 package gdg.hongik.project.gollazoom.closet.controller;
 
 import gdg.hongik.project.gollazoom.closet.dto.*;
+import gdg.hongik.project.gollazoom.closet.entity.WashStatus;
 import gdg.hongik.project.gollazoom.closet.service.ClosetService;
 import gdg.hongik.project.gollazoom.global.api.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -48,17 +49,17 @@ public class ClosetController {
     /**
      * 옷장에 등록된 모든 옷을 조회합니다.
      * @param userId : 유저 정보
-     * @param includeWashing : 세탁 중인 옷들도 포함하여 보여줄지 판단합니다.
+     * @param washStatus : 세탁 중인 옷들도 포함하여 보여줄지 판단합니다.
      * @return : 옷 리스트
      */
     @GetMapping
     @Operation(summary = "모든 옷 조회", description = "옷장에 등록된 모든 옷을 조회합니다")
     public List<ClosetItemListResponse> clothingList(
             @AuthenticationPrincipal Long userId,
-            // 추천에서는 세탁중 옷 제외. 추후 흐리게 보이게 하기 등 조치 취해야 한다면 수정 가능.
-            @RequestParam(defaultValue = "false") boolean includeWashing
-    ) {
-        return closetService.list(userId, includeWashing);
+            // 필터 조건에 따라 빨래중, 세탁완료 거름. 전체는 washStatus가 null 상태
+            @RequestParam(required = false) WashStatus washStatus
+            ) {
+        return closetService.list(userId, washStatus);
     }
 
     /**

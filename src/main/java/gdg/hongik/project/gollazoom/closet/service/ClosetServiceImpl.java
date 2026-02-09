@@ -64,18 +64,10 @@ public class ClosetServiceImpl implements ClosetService {
      */
     @Override
     @Transactional(readOnly = true)
-    public List<ClosetItemListResponse> list(Long userId, boolean includeWashing) {
-        List<Cloth> clothes;
-
-        // 세탁 중인 옷을 조회에 포함시킬 것인가?
-        if (includeWashing) {
-            clothes = clothRepository.findAllByUser_IdOrderByCreatedAtDesc(userId);
-        } else {
-            clothes = clothRepository.findAllByUser_IdAndWashStatusNotOrderByCreatedAtDesc(
-                    userId,
-                    WashStatus.WASHING
-            );
-        }
+    public List<ClosetItemListResponse> list(Long userId, WashStatus washStatus) {
+        List<Cloth> clothes = (washStatus == null)
+                ? clothRepository.findAllByUser_IdOrderByCreatedAtDesc(userId)
+                : clothRepository.findAllByUser_IdAndWashStatusOrderByCreatedAtDesc(userId, washStatus);
 
         return clothes.stream()
                 .map(this::toListItem)
