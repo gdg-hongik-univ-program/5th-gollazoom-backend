@@ -10,6 +10,7 @@ import gdg.hongik.project.gollazoom.user.repository.UserRepository;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -29,7 +30,7 @@ public class ClosetServiceImpl implements ClosetService {
      * @return : 생성된 옷의 정보들 즉, 변수들의 값을 toResponse를 이용해 반환합니다.
      */
     @Override
-    public ClosetResponse create(Long userId, ClosetCreateRequest request) {
+    public ClosetResponse create(Long userId, ClosetCreateRequest request, MultipartFile image) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
         String imageUrl = request.imageUrl();

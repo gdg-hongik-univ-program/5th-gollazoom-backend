@@ -7,10 +7,12 @@ import gdg.hongik.project.gollazoom.global.api.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -18,7 +20,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/api/closet")
 public class ClosetController {
-    private final ClosetService closetService; // 아직 서비스 계층이 구현되지 않음.
+    private final ClosetService closetService;
 
     /*
         미션 코스때와는 달리 user만의 소유의 개념이 존재하므로 코딩의 방향이 달라진다.
@@ -35,15 +37,15 @@ public class ClosetController {
      * @param request
      * @return
      */
-    @PostMapping
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
-    @Operation(summary = "옷 등록", description = "옷을 등록합니다")
     public ClosetResponse create(
             Authentication auth,
-            @RequestBody ClosetCreateRequest request
+            @RequestPart("data") ClosetCreateRequest request,
+            @RequestPart(value = "image", required = false) MultipartFile image
     ) {
         Long userId = (Long) auth.getPrincipal();
-        return closetService.create(userId, request);
+        return closetService.create(userId, request, image);
     }
 
     /**
