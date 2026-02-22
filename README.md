@@ -215,4 +215,4 @@ GDG 홍익대학교 프로젝트 팀 '골라ZOOM' 팀에서 개발했습니다.
 | 김순호 | Frontend | 유저 환경 설정 및 출근 알람 구현 | https://github.com/Motor059 | [https://velog.io/@tnsgh01/](https://velog.io/@tnsgh01/%EA%B8%B0%ED%9A%8D-%EB%B8%8C%EB%A0%88%EC%9D%B8%EC%8A%A4%ED%86%A0%EB%B0%8D-WIL) |
 | 양은정 | Frontend | 옷장 페이지, 캘린더 페이지 구현 | https://github.com/YangEunJung | https://blog.naver.com/ej_33 |
 
-## ⭐ 이 프로젝트가 마음에 드셨다면 Star를 눌러주세요! ⭐
+## ⭐ 이 프로젝트가 마음에 드신다면 GitHub Star로 응원해주세요! ⭐
