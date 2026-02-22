@@ -55,7 +55,7 @@ public class SecurityFilterConfig {
         // 프론트엔드 주소 기입
         config.setAllowedOrigins(List.of(
                 "http://localhost:5173",
-                "https://5th-gollazoom-frontend-pi.vercel.app/login"
+                "https://5th-gollazoom-frontend-pi.vercel.app"
         ));
 
         config.setAllowedMethods(List.of("GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"));
