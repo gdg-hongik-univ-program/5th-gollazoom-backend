@@ -49,7 +49,7 @@
 
 ### Frontend
 
-```json
+```
 ├── public               # PWA 아이콘, 파비콘 등 정적 파일
 ├── src
 │   ├── api              # Axios 및 API 호출 함수
@@ -78,7 +78,7 @@
 
 ### Backend
 
-```json
+```
 src/main/java/gdg/hongik/project/gollazoom/
 ├── GollazoomApplication.java           # 메인 애플리케이션
 ├── config/                             # 설정 관련
