@@ -72,12 +72,12 @@ public class ClosetController {
      */
     @GetMapping
     @Operation(summary = "모든 옷 조회", description = "옷장에 등록된 모든 옷을 조회합니다")
-    public List<ClosetItemListResponse> clothingList(
+    public ApiResponse<List<ClosetItemListResponse>> clothingList(
             @AuthenticationPrincipal Long userId,
             // 필터 조건에 따라 빨래중, 세탁완료 거름. 전체는 washStatus가 null 상태
             @RequestParam(required = false) WashStatus washStatus
             ) {
-        return closetService.list(userId, washStatus);
+        return ApiResponse.ok(null, closetService.list(userId, washStatus));
     }
 
     /**
