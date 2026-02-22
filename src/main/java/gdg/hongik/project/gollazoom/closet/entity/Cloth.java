@@ -45,6 +45,12 @@ public class Cloth extends BaseEntity {
     @Column(nullable = false)
     private boolean isRaining;
 
+    @Column
+    private String colorCode;
+
+    @Enumerated(EnumType.STRING)
+    private SubCategory subCategory;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private WashStatus washStatus = WashStatus.AVAILABLE; // 기본값
@@ -52,7 +58,7 @@ public class Cloth extends BaseEntity {
     @Column
     private LocalDateTime lastWornAt;
 
-    public Cloth(User user, Category category, Season season, String color, String memo, String imageUrl, boolean isRaining) {
+    public Cloth(User user, Category category, Season season, String color, String memo, String imageUrl, boolean isRaining, SubCategory subCategory, String colorCode) {
         this.user = user;
         this.category = category;
         this.season = season;
@@ -60,16 +66,21 @@ public class Cloth extends BaseEntity {
         this.memo = memo;
         this.imageUrl = imageUrl;
         this.isRaining = isRaining;
+        this.subCategory = subCategory;
+        this.colorCode = colorCode;
     }
 
     // update 메서드에 washStatus는 넣지 않음.
-    public void update(Category category, Season season, String color, String memo, String imageUrl, boolean isRaining) {
+    public void update(Category category, Season season, String color, String memo, String imageUrl, boolean isRaining, SubCategory subCategory, String colorCode) {
         if (category != null) this.category = category;
         if (season != null) this.season = season;
         if (color != null) this.color = color;
         if (memo != null) this.memo = memo;
         if (imageUrl != null) this.imageUrl = imageUrl;
         this.isRaining = isRaining;
+        if (subCategory != null) this.subCategory = subCategory;
+        if (colorCode != null) this.colorCode = colorCode;
+
     }
 
     public void changeWashStatus(WashStatus washStatus) {

@@ -2,6 +2,7 @@ package gdg.hongik.project.gollazoom.closet.dto;
 
 import gdg.hongik.project.gollazoom.closet.entity.Category;
 import gdg.hongik.project.gollazoom.closet.entity.Season;
+import gdg.hongik.project.gollazoom.closet.entity.SubCategory;
 import gdg.hongik.project.gollazoom.closet.entity.WashStatus;
 
 import java.time.LocalDateTime;
@@ -12,6 +13,8 @@ public record ClosetItemListResponse(
         Category category,
         Season season,
         boolean isRaining,
-        WashStatus washstatus,
-        LocalDateTime lastWornAt
+        WashStatus washStatus,
+        LocalDateTime lastWornAt,
+        SubCategory subCategory,
+        String colorCode
 ) { }
