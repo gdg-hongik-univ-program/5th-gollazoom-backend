@@ -47,37 +47,6 @@
 
 ## 📁 프로젝트 구조
 
-### Frontend
-
-```
-├── public               # PWA 아이콘, 파비콘 등 정적 파일
-├── src
-│   ├── api              # Axios 및 API 호출 함수
-│   ├── assets           # 이미지, 아이콘 등의 에셋
-│   ├── components       # 재사용 가능한 UI 컴포넌트
-│   │   ├── common       # 공통 컴포넌트
-│   │   ├── home         # 홈 화면 전용 컴포넌트
-│   │   └── modal        # 특정 기능 모달
-│   ├── data             # 정적 데이터 및 상수
-│   ├── hooks            # 알람 관련 커스텀 훅
-│   ├── layouts          # 페이지 공통 레이아웃
-│   ├── mocks            # MSW를 활용한 API 모킹 데이터 및 핸들러
-│   ├── pages            # 라우팅되는 각 페이지 컴포넌트
-│   │   ├── calendar     # 캘린더 관련 페이지
-│   │   ├── closet       # 옷장 관련 페이지
-│   │   ├── setuser      # 로그인, 회원가입, 출근시간 설정
-│   │   ├── userinfo     # 마이페이지 및 정보 수정
-│   │   └── Home.tsx     # 메인 홈 화면
-│   ├── App.tsx          # 최상위 라우팅 및 전역 상태/모달 관리
-│   └── main.tsx         # React 앱 엔트리 포인트
-├── .env                 # 환경 변수 설정 (API 주소)
-├── index.html           # 메인 HTML 파일 (파비콘 설정)
-├── vercel.json          # Vercel 배포 시 라우팅 설정
-└── vite.config.ts       # Vite 및 PWA 빌드 설정
-```
-
-### Backend
-
 ```
 src/main/java/gdg/hongik/project/gollazoom/
 ├── GollazoomApplication.java           # 메인 애플리케이션
