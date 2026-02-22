@@ -7,7 +7,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 public interface ClosetService {
-    ClosetResponse create(Long userId, ClosetCreateRequest request, MultipartFile image);
+    ClosetResponse createQuick(Long userId, ClosetCreateRequest request);
+    ClosetResponse createWithImage(Long userId, ClosetCreateRequest request, org.springframework.web.multipart.MultipartFile image);
     List<ClosetItemListResponse> list(Long userId, WashStatus washStatus);
     ClosetResponse get(Long userId, Long clothId);
     ClosetResponse update(Long userId, Long clothId, ClosetUpdateRequest request);

@@ -37,16 +37,32 @@ public class ClosetController {
      * @param request
      * @return
      */
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
-    public ClosetResponse create(
+    @Operation(summary = "옷 등록(퀵등록, JSON)")
+    public ClosetResponse createQuick(
+            Authentication auth,
+            @RequestBody ClosetCreateRequest request
+    ) {
+        Long userId = (Long) auth.getPrincipal();
+        return closetService.createQuick(userId, request);
+    }
+
+    @PostMapping(
+            value = "/upload",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+    )
+    @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "옷 등록(사진등록, multipart)")
+    public ClosetResponse createWithImage(
             Authentication auth,
             @RequestPart("data") ClosetCreateRequest request,
             @RequestPart(value = "image", required = false) MultipartFile image
     ) {
         Long userId = (Long) auth.getPrincipal();
-        return closetService.create(userId, request, image);
+        return closetService.createWithImage(userId, request, image);
     }
+
 
     /**
      * 옷장에 등록된 모든 옷을 조회합니다.

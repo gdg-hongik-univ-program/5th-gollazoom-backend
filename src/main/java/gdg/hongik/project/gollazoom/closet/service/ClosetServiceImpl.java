@@ -30,32 +30,55 @@ public class ClosetServiceImpl implements ClosetService {
      * @return : 생성된 옷의 정보들 즉, 변수들의 값을 toResponse를 이용해 반환합니다.
      */
     @Override
-    public ClosetResponse create(Long userId, ClosetCreateRequest request, MultipartFile image) {
+    public ClosetResponse createQuick(Long userId, ClosetCreateRequest request) {
+        return createInternal(userId, request, null);
+    }
+
+    @Override
+    public ClosetResponse createWithImage(Long userId, ClosetCreateRequest request, MultipartFile image) {
+        return createInternal(userId, request, image);
+    }
+
+    private ClosetResponse createInternal(Long userId, ClosetCreateRequest request, MultipartFile image) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+
+        // 1) 이미지 URL 결정
         String imageUrl = request.imageUrl();
-        if (imageUrl == null || imageUrl.isBlank()) {
-            if (request.subCategory() == null || request.colorCode() == null||request.colorCode().isBlank()) {
-                throw new IllegalArgumentException("imageUrl 없을 시 퀵등록 정보 필수");
-            }
-            imageUrl =
-                    QUICK_UPLOAD_URL + "/"
-                            + request.category() + "/"
-                            + request.subCategory() + "/"
-                            + request.colorCode() + ".png";
+
+        // 사진등록이면: image가 들어왔을 때 imageUrl을 서버 업로드 결과로 만들기
+        if (image != null && !image.isEmpty()) {
+            // TODO: S3/서버 업로드 후 URL 만들기
+            // 지금은 임시로 "uploaded://" 같은 값 넣지 말고, 실제 업로드 붙이기 전까지는
+            // request.imageUrl이 비어있으면 에러를 던지거나, 임시 URL 정책을 정해.
+            imageUrl = "https://your-uploaded-url/" + image.getOriginalFilename();
         }
+
+        // 2) 퀵등록이면: imageUrl 없으면 quick 규칙 적용
+        if (imageUrl == null || imageUrl.isBlank()) {
+            if (request.subCategory() == null || request.colorCode() == null || request.colorCode().isBlank()) {
+                throw new IllegalArgumentException("imageUrl 없을 시 퀵등록 정보(category/subCategory/colorCode) 필수");
+            }
+            imageUrl = QUICK_UPLOAD_URL + "/"
+                    + request.category() + "/"
+                    + request.subCategory() + "/"
+                    + request.colorCode() + ".png";
+        }
+
         Cloth cloth = new Cloth(
                 user,
                 request.category(),
                 request.season(),
                 request.color(),
                 request.memo(),
-                imageUrl, // 사진 있다? -> 사진정보 / 사진 없다 -> 퀵 등록 정보
+                imageUrl,
                 request.isRaining()
         );
+
         Cloth saved = clothRepository.save(cloth);
         return toResponse(saved);
     }
+
 
     /**
      * 모든 옷의 리스트를 불러옵니다.
