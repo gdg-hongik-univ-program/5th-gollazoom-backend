@@ -33,6 +33,7 @@ public class SecurityFilterConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(
+                                "/error",
                                 "/users/signup",
                                 "/users/login",
                                 "/swagger-ui/**",
