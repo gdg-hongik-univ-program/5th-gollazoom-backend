@@ -42,14 +42,26 @@ jobs:
             set -e
 
             APP_DIR="${{ secrets.APP_DIR }}"
-            APP_NAME="${{ secrets.APP_NAME }}"
             RELEASES_DIR="$APP_DIR/releases"
             CURRENT_DIR="$APP_DIR/current"
 
             mkdir -p "$RELEASES_DIR" "$CURRENT_DIR"
 
             LATEST_JAR=$(find "$RELEASES_DIR" -name "*.jar" | sort | tail -n 1)
+            if [ -z "$LATEST_JAR" ]; then
+              echo "No jar found in $RELEASES_DIR"
+              exit 1
+            fi
+
             cp "$LATEST_JAR" "$CURRENT_DIR/app.jar"
 
-            pkill -f 'java -jar' || true
-            nohup java -jar "$CURRENT_DIR/app.jar" > "$APP_DIR/app.log" 2>&1 &
+            PID=$(pgrep -f "$CURRENT_DIR/app.jar" || true)
+            if [ -n "$PID" ]; then
+              kill "$PID" || true
+              sleep 2
+            fi
+
+            (nohup java -jar "$CURRENT_DIR/app.jar" > "$APP_DIR/app.log" 2>&1 < /dev/null &) >/dev/null 2>&1
+
+            sleep 1
+            pgrep -f "$CURRENT_DIR/app.jar" >/dev/null && echo "App started" || (echo "App not running"; tail -n 50 "$APP_DIR/app.log"; exit 1)
