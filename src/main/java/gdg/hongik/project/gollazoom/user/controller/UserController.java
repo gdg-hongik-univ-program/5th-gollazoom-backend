@@ -31,6 +31,14 @@ public class UserController {
         return userResponse;
     }
 
+    @GetMapping("/username")
+    @Operation(summary = "아이디 중복 체크", description = "username 사용 가능 여부를 확인합니다.")
+    public ApiResponse<Boolean> checkUsername(@RequestParam String username) {
+        boolean available = userService.isUsernameAvailable(username);
+        return ApiResponse.ok(null, available);
+    }
+
+
     @PostMapping("/login")
     @Operation(summary = "로그인", description = "로그인을 진행합니다")
     public LoginResponse login(@RequestBody LoginRequest request) {

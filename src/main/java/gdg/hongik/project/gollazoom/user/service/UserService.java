@@ -134,5 +134,13 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("유저 없음"));
         user.setNickname(req.nickname());
     }
+
+    @Transactional(readOnly = true)
+    public boolean isUsernameAvailable(String username) {
+        if (username == null || username.isBlank()) {
+            throw new IllegalArgumentException("아이디는 필수입니다.");
+        }
+        return !userRepository.existsByUsername(username);
+    }
 }
 
