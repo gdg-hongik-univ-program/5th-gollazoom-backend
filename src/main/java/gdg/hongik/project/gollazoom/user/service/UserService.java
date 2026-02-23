@@ -31,6 +31,10 @@ public class UserService {
     private final JwtTokenProvider jwtTokenProvider;
 
     public UserResponse signup(SignupRequest request) {
+        if (userRepository.existsByUsername(request.username())) {
+            throw new IllegalStateException("이미 사용 중인 아이디입니다.");
+        }
+
         User user = User.builder()
                 .username(request.username())
                 .password(passwordEncoder.encode(request.password()))

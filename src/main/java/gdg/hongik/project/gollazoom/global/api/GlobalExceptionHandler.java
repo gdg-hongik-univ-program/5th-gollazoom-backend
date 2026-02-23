@@ -4,6 +4,7 @@ package gdg.hongik.project.gollazoom.global.api;
 
 import gdg.hongik.project.gollazoom.wears.exception.WearForbiddenException;
 import gdg.hongik.project.gollazoom.wears.exception.WearNotFoundException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -35,4 +36,19 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(ApiResponse.fail(e.getMessage(), null));
     }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ApiResponse<Void>> handleDataIntegrityViolation(DataIntegrityViolationException e) {
+        String msg = "아이디 형식이 맞지 않습니다.";
+
+        String raw = String.valueOf(e.getMostSpecificCause().getMessage());
+        if (raw.contains("users") && raw.contains("username")) {
+            msg = "이미 사용 중인 아이디입니다.";
+        }
+
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ApiResponse.fail(msg, null));
+    }
+
+
 }
