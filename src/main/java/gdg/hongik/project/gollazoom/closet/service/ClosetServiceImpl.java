@@ -5,6 +5,7 @@ import gdg.hongik.project.gollazoom.closet.entity.Category;
 import gdg.hongik.project.gollazoom.closet.entity.Cloth;
 import gdg.hongik.project.gollazoom.closet.entity.WashStatus;
 import gdg.hongik.project.gollazoom.closet.repository.ClothRepository;
+import gdg.hongik.project.gollazoom.s3.S3Uploader;
 import gdg.hongik.project.gollazoom.user.entity.User;
 import gdg.hongik.project.gollazoom.user.repository.UserRepository;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +21,7 @@ import java.util.List;
 public class ClosetServiceImpl implements ClosetService {
     private final ClothRepository clothRepository;
     private final UserRepository userRepository;
+    private final S3Uploader s3Uploader;
     private static final String QUICK_UPLOAD_URL = "https://quickupload";
 
     /**
@@ -48,10 +50,7 @@ public class ClosetServiceImpl implements ClosetService {
 
         // 사진등록이면: image가 들어왔을 때 imageUrl을 서버 업로드 결과로 만들기
         if (image != null && !image.isEmpty()) {
-            // TODO: S3/서버 업로드 후 URL 만들기
-            // 지금은 임시로 "uploaded://" 같은 값 넣지 말고, 실제 업로드 붙이기 전까지는
-            // request.imageUrl이 비어있으면 에러를 던지거나, 임시 URL 정책을 정해.
-            imageUrl = "https://your-uploaded-url/" + image.getOriginalFilename();
+            imageUrl = s3Uploader.upload(image);
         }
 
         // 2) 퀵등록이면: imageUrl 없으면 quick 규칙 적용
