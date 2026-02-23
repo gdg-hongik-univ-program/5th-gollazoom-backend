@@ -120,12 +120,23 @@ public class WearRecommendServiceImpl implements  WearRecommendService{
             if (violatesTemperatureRule(presetClothes, temperature)) continue;
             if (violatesYesterdayRule(presetClothes, yesterdayClothIds)) continue;
 
+            List<WearRecommendResponse.ClothSummary> summaries = presetClothes.stream()
+                    .map(c -> new WearRecommendResponse.ClothSummary(
+                            c.getId(),
+                            c.getImageUrl(),
+                            c.getCategory().name(),
+                            c.getSubCategory() == null ? null : c.getSubCategory().name(),
+                            c.getColorCode(),
+                            c.isRaining()
+                    ))
+                    .toList();
+
             // 4. 통과 시 무조건 추천
             candidates.add(new WearRecommendResponse.Recommendation(
                     "PRESET",
                     100, // 만점!
                     List.of(),
-                    clothIds
+                    summaries
             ));
         }
 
@@ -229,7 +240,7 @@ public class WearRecommendServiceImpl implements  WearRecommendService{
                 base.type(),
                 base.score(),
                 warnings,
-                base.clothIds()
+                base.clothes()
         );
     }
 
@@ -245,7 +256,7 @@ public class WearRecommendServiceImpl implements  WearRecommendService{
                 base.type(),
                 base.score(),
                 newWarnings,
-                base.clothIds()
+                base.clothes()
         );
     }
 
@@ -284,8 +295,19 @@ public class WearRecommendServiceImpl implements  WearRecommendService{
         if (outerCandidate == null) return base;
 
         // 합체, base clothIds + outerId
-        List<Long> mergedIds = new ArrayList<>(base.clothIds());
-        mergedIds.add(outerCandidate.getId());
+        List<WearRecommendResponse.ClothSummary> mergedClothes =
+                new ArrayList<>(base.clothes());
+
+        mergedClothes.add(
+                new WearRecommendResponse.ClothSummary(
+                        outerCandidate.getId(),
+                        outerCandidate.getImageUrl(),
+                        outerCandidate.getCategory().name(),
+                        outerCandidate.getSubCategory() == null ? null : outerCandidate.getSubCategory().name(),
+                        outerCandidate.getColorCode(),
+                        outerCandidate.isRaining()
+                )
+        );
 
         // 점수 합산(디버깅용)
         int mergedScore = base.score() + bestOuterScore;
@@ -298,7 +320,7 @@ public class WearRecommendServiceImpl implements  WearRecommendService{
                 base.type(),
                 mergedScore,
                 mergedWarnings,
-                mergedIds
+                mergedClothes
         );
     }
 
@@ -335,9 +357,18 @@ public class WearRecommendServiceImpl implements  WearRecommendService{
 
         // score 하한선은 일단 마이너스 허용
 
-        List<Long> clothIds = clothes.stream().map(Cloth::getId).toList();
+        List<WearRecommendResponse.ClothSummary> summaries = clothes.stream()
+                .map(c -> new WearRecommendResponse.ClothSummary(
+                        c.getId(),
+                        c.getImageUrl(),
+                        c.getCategory().name(),
+                        c.getSubCategory() == null ? null : c.getSubCategory().name(),
+                        c.getColorCode(),
+                        c.isRaining()
+                ))
+                .toList();
 
-        return new WearRecommendResponse.Recommendation(type, score, warnings, clothIds);
+        return new WearRecommendResponse.Recommendation(type, score, warnings, summaries);
     }
 
     // 룰 체크 로직
