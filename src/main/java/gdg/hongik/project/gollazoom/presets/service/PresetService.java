@@ -63,7 +63,9 @@ public class PresetService {
                         item.getCloth().getSeason(),
                         item.getCloth().getColor(),
                         item.getCloth().getImageUrl(),
-                        item.getCloth().isRaining()
+                        item.getCloth().isRaining(),
+                        item.getCloth().getSubCategory(),
+                        item.getCloth().getColorCode()
                 ))
                 .toList();
         return new PresetDetailResponse(

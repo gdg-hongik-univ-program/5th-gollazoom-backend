@@ -54,14 +54,11 @@ public class ClosetServiceImpl implements ClosetService {
         }
 
         // 2) 퀵등록이면: imageUrl 없으면 quick 규칙 적용
-        if (imageUrl == null || imageUrl.isBlank()) {
+        if ((imageUrl == null || imageUrl.isBlank()) && (image == null || image.isEmpty())) {
             if (request.subCategory() == null || request.colorCode() == null || request.colorCode().isBlank()) {
-                throw new IllegalArgumentException("imageUrl 없을 시 퀵등록 정보(category/subCategory/colorCode) 필수");
+                throw new IllegalArgumentException("퀵등록은 subCategory/colorCode 필수");
             }
-            imageUrl = QUICK_UPLOAD_URL + "/"
-                    + request.category() + "/"
-                    + request.subCategory() + "/"
-                    + request.colorCode() + ".png";
+            imageUrl = null; // 핵심
         }
 
         Cloth cloth = new Cloth(
@@ -129,19 +126,13 @@ public class ClosetServiceImpl implements ClosetService {
                 .orElseThrow(() -> new IllegalArgumentException("옷을 찻을 수 없습니다."));
         String imageUrl = null;
         if (request.imageUrl() != null && !request.imageUrl().isBlank()) {
-            imageUrl = request.imageUrl();
+            imageUrl = request.imageUrl(); // (사진 등록 URL이면 그대로)
         } else {
             boolean hasSub = request.subCategory() != null;
             boolean hasColor = request.colorCode() != null && !request.colorCode().isBlank();
             if (hasSub || hasColor) {
-                if (!hasSub || !hasColor) {
-                    throw new IllegalArgumentException("퀵 등록 정보 필요");
-                }
-                Category category = (request.category() != null) ? request.category() : cloth.getCategory();
-                imageUrl = QUICK_UPLOAD_URL + "/"
-                        + category + "/"
-                        + request.subCategory() + "/"
-                        + request.colorCode() + ".png";
+                if (!hasSub || !hasColor) throw new IllegalArgumentException("퀵 등록 정보 필요");
+                imageUrl = null; // 핵심 (URL 생성 X)
             }
         }
         cloth.update(
