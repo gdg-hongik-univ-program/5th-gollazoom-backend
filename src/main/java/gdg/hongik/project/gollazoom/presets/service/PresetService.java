@@ -77,11 +77,39 @@ public class PresetService {
     }
     public List<PresetListResponse> getPresetList(Long userId) {
         return presetRepository.findAllByUserIdOrderByCreatedAtDesc(userId).stream()
-                .map(p->new PresetListResponse(
-                        p.getId(),
-                        p.getName(),
-                        p.getCreatedAt()
-                )).toList();
+                .map(p -> {
+
+                    // 🔥 프리셋에 들어있는 옷들
+                    List<Cloth> clothes = p.getItems().stream()
+                            .map(PresetItem::getCloth)
+                            .toList();
+
+                    // 대표 이미지 선택 로직
+                    String thumbnail = extractThumbnail(clothes);
+
+                    return new PresetListResponse(
+                            p.getId(),
+                            p.getName(),
+                            p.getCreatedAt(),
+                            thumbnail
+                    );
+                })
+                .toList();
+    }
+
+    private String extractThumbnail(List<Cloth> clothes) {
+        if (clothes == null || clothes.isEmpty()) return null;
+
+        // 우선순위: DRESS → TOP → 첫번째
+        return clothes.stream()
+                .sorted(Comparator.comparing(c -> {
+                    if (c.getCategory().name().equals("DRESS")) return 0;
+                    if (c.getCategory().name().equals("TOP")) return 1;
+                    return 2;
+                }))
+                .map(Cloth::getImageUrl)
+                .findFirst()
+                .orElse(null);
     }
 
     public void updatePreset(Long userId, Long presetId, PresetUpdateRequest request) {

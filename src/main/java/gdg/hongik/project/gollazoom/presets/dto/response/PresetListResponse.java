@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 public record PresetListResponse(
         Long presetId,
         String name,
-        LocalDateTime createdAt
+        LocalDateTime createdAt,
+        String thumbnailImageUrl
 ) {
 }
