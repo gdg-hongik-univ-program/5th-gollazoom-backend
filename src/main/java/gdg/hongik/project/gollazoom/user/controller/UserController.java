@@ -46,7 +46,7 @@ public class UserController {
         return new LoginResponse(token);
     }
 
-    @PatchMapping("/password")
+    @PatchMapping("/me/password")
     @Operation(summary = "비밀번호 변경", description = "비밀번호를 변경합니다")
     public ResponseEntity<Void> changePassword(@RequestBody ChangePasswordRequest req) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -75,7 +75,7 @@ public class UserController {
         return ResponseEntity.noContent().build(); // 204
     }
 
-    @PatchMapping("/worktime")
+    @PatchMapping("/me/worktime")
     @Operation(summary = "출근시간 수정")
     public ResponseEntity<Void> updateWorktime(
             @Valid @RequestBody WorktimeRequest req
@@ -102,7 +102,7 @@ public class UserController {
         return ApiResponse.ok( null, userService.getWashSetting(userId));
     }
 
-    @PatchMapping("/wash-setting")
+    @PatchMapping("/me/wash-setting")
     public ApiResponse<UserWashSettingResponse> updateWashSetting(
             @AuthenticationPrincipal Long userId,
             @RequestBody UserWashSettingUpdateRequest request
