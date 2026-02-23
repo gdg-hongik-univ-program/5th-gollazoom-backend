@@ -36,6 +36,7 @@ public class SecurityFilterConfig {
                                 "/error",
                                 "/users/signup",
                                 "/users/login",
+                                "/users/username",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/h2-console/**"
