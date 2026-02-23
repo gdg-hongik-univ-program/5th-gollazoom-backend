@@ -41,24 +41,40 @@ public class ClosetServiceImpl implements ClosetService {
         return createInternal(userId, request, image);
     }
 
+
     private ClosetResponse createInternal(Long userId, ClosetCreateRequest request, MultipartFile image) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
 
-        // 1) 이미지 URL 결정
-        String imageUrl = request.imageUrl();
+        // 1) 기본: 요청으로 받은 imageUrl
+        String imageUrl = normalize(request.imageUrl());
 
-        // 사진등록이면: image가 들어왔을 때 imageUrl을 서버 업로드 결과로 만들기
+        // 2) 사진 업로드면: 업로드 결과로 덮어쓰기
         if (image != null && !image.isEmpty()) {
             imageUrl = s3Uploader.upload(image);
         }
 
-        // 2) 퀵등록이면: imageUrl 없으면 quick 규칙 적용
-        if ((imageUrl == null || imageUrl.isBlank()) && (image == null || image.isEmpty())) {
-            if (request.subCategory() == null || request.colorCode() == null || request.colorCode().isBlank()) {
-                throw new IllegalArgumentException("퀵등록은 subCategory/colorCode 필수");
+        // 3) 퀵등록이면: imageUrl이 비어있을 때 규칙으로 생성
+        if (imageUrl == null) {
+            if (request.category() == null) {
+                throw new IllegalArgumentException("퀵등록 시 category는 필수입니다.");
             }
-            imageUrl = null; // 핵심
+            if (request.subCategory() == null) {
+                throw new IllegalArgumentException("퀵등록 시 subCategory는 필수입니다.");
+            }
+            if (request.colorCode() == null || request.colorCode().isBlank()) {
+                throw new IllegalArgumentException("퀵등록 시 colorCode는 필수입니다.");
+            }
+
+            imageUrl = QUICK_UPLOAD_URL + "/"
+                    + request.category() + "/"
+                    + request.subCategory() + "/"
+                    + request.colorCode() + ".png";
+        }
+
+        // 4) 최종 방어: 여기서도 null이면 500 대신 400으로 차단
+        if (imageUrl == null) {
+            throw new IllegalArgumentException("imageUrl 생성에 실패했습니다. 요청값을 확인하세요.");
         }
 
         Cloth cloth = new Cloth(
@@ -75,6 +91,16 @@ public class ClosetServiceImpl implements ClosetService {
 
         Cloth saved = clothRepository.save(cloth);
         return toResponse(saved);
+    }
+
+    // "null", "undefined", "" 같은 프론트 찌꺼기 정리
+    private String normalize(String v) {
+        if (v == null) return null;
+        String s = v.trim();
+        if (s.isEmpty()) return null;
+        if (s.equalsIgnoreCase("null")) return null;
+        if (s.equalsIgnoreCase("undefined")) return null;
+        return s;
     }
 
 
